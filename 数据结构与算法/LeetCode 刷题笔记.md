@@ -1,8 +1,8 @@
 # LeetCode 刷题笔记
 
-[二叉搜索树](#二二叉搜索树)
+tag：[二叉搜索树](#二叉搜索树)
 
-## 一、二叉树
+## 二叉树
 
 ```c++
 //c++版本的二叉树
@@ -1188,29 +1188,23 @@ public:
 
 ```c++
 class Solution {
-public:
     //整个二叉树：入度=出度
     //除了根结点，每个非空结点会提供 1入度和2出度；
     //"#"空结点只提供1入度
-    bool isValidSerialization(string preorder) {
+    public boolean isValidSerialization(String preorder) {
         if(preorder == "") return true;
         int sub = 1; //sub = 出度-入度，在二叉树遍历完之前，sub > 0
         //sub = 1是为了根结点和其他非空结点统一
-        int i = 0;
-        while(i < preorder.length()){
-            if(preorder[i] == ',') i++;
-            else{
-                sub--; //每个结点会提供1入度
-                if(sub < 0)
-                    return false;
-                if(preorder[i] != '#')
-                    sub += 2; //非空结点提供2出度
-                i++;
-            }
+        for(String node : preorder.split(",")){
+            sub--; //每个结点会提供1入度
+            if(sub < 0)
+                return false;
+            if(!node.equals("#"))
+                sub += 2; //非空结点提供2出度
         }
         return sub == 0;
     }
-};
+}
 ```
 
 #### [437. Path Sum III](https://leetcode-cn.com/problems/path-sum-iii/)
@@ -1283,7 +1277,7 @@ public:
 };
 ```
 
-## 二、二叉搜索树
+## 二叉搜索树
 
 ### EASY
 
@@ -1840,21 +1834,63 @@ public:
 };
 ```
 
+#### [449. Serialize and Deserialize BST](https://leetcode-cn.com/problems/serialize-and-deserialize-bst/)
+
+```java
+ublic class Codec {
+
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        StringBuilder ans = new StringBuilder();
+        serialize(root, ans);
+        return ans.toString();
+    }
+    private void serialize(TreeNode root, StringBuilder ans) {
+        if(root == null) return;
+        //先序遍历
+        ans.append(root.val).append(",");
+        serialize(root.left, ans);
+        serialize(root.right, ans);
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if(data.isEmpty()) return null;
+        LinkedList<Integer> inorder = new LinkedList<>();
+        for(String node : data.split(","))
+            inorder.offer(Integer.parseInt(node));
+        return deserialize(inorder, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+    private TreeNode deserialize(LinkedList<Integer> inorder, int min, int max){
+        if(inorder.isEmpty()) return null;
+        int rootVal = inorder.getFirst();
+        if(rootVal > max || rootVal < min)  return null;
+        inorder.removeFirst();
+
+        TreeNode root = new TreeNode(rootVal);
+        root.left = deserialize(inorder, min, rootVal);
+        root.right = deserialize(inorder, rootVal, max);
+
+        return root;
+    }
+}
+```
+
 
 
 ### HARD
 
-## 三、数组双指针
+## 数组双指针
 
-## 四、链表双指针
+## 链表双指针
 
-## 五、前缀和
+## 前缀和
 
-## 六、差分数组
+## 差分数组
 
-## 七、队列/栈
+## 队列/栈
 
-## 八、堆
+## 堆
 
 #### [703. Kth Largest Element in a Stream](https://leetcode-cn.com/problems/kth-largest-element-in-a-stream/)
 
@@ -1872,9 +1908,9 @@ public:
 
 
 
-## 九、数据结构设计
+## 数据结构设计
 
-## 十、图论
+## 图论
 
 ## 暴力搜索算法
 
@@ -1911,8 +1947,74 @@ public:
 
 #### [337. House Robber III](https://leetcode-cn.com/problems/house-robber-iii/)
 
-```c++
+```java
+class Solution {
+    //mem备忘录，记录以当前结点为根，能偷的最大钱数
+    Map<TreeNode, Integer> mem = new HashMap<>();
+    public int rob(TreeNode root) {
+        if(root == null) return 0;
+        if(mem.containsKey(root)) //消除重叠子问题
+            return mem.get(root);
+        //抢这一层，然后去下下层
+        int rob = root.val 
+                + (root.left == null 
+                  ? 0 : rob(root.left.left) + rob(root.left.right))
+                + (root.right == null
+                  ? 0 : rob(root.right.left) + rob(root.right.right));
+        //不抢这一层，去下一层
+        int not_rob = rob(root.left) + rob(root.right);
+        int res = Math.max(rob, not_rob);
+        mem.put(root, res);
+        return res;
+    }
+}
+```
 
+#### [437. Path Sum III](https://leetcode-cn.com/problems/path-sum-iii/)
+
+```java
+class Solution {
+    //dfs暴力搜索，遍历二叉树的每个结点，检测当前结点向下延申共有多少条路经
+    public int pathSum(TreeNode root, int targetSum) {
+        if(root == null) return 0;
+        return dfs(root, targetSum)
+             + pathSum(root.left, targetSum)
+             + pathSum(root.right, targetSum);
+    }
+    //返回以root为根结点的 路径和等于val 的路径数目
+    public int dfs(TreeNode root, int val) {
+        if(root == null) return 0;
+        int sum = 0;
+        if(root.val == val) sum++;
+        return sum 
+             + dfs(root.left, val-root.val)
+             + dfs(root.right, val-root.val);
+    }
+    //前缀和，消除重复运算
+    //记录根节点root到当前节点p的路径上除当前节点以外所有节点的前缀和
+    //(key=前缀和，value=该前缀和的个数)
+    Map<Long, Integer> prefix = new HashMap<>();
+    public int pathSum(TreeNode root, int targetSum) {
+        if(root == null) return 0;
+        prefix.put(0L, 1); //空路径
+        return dfs(root, 0L, targetSum);
+    }
+
+    public int dfs(TreeNode root, Long curSum, int targetSum){
+        if(root == null) return 0;
+        
+        curSum += root.val;
+        int res = prefix.getOrDefault(curSum-targetSum, 0);
+        prefix.put(curSum, prefix.getOrDefault(curSum, 0)+1);
+
+        res += dfs(root.left, curSum, targetSum);
+        res += dfs(root.right, curSum, targetSum);
+
+        prefix.put(curSum, prefix.getOrDefault(curSum, 0)-1);
+        curSum -= root.val;
+        return res;
+    }
+}
 ```
 
 
@@ -2450,4 +2552,6 @@ int num = m.count(3); //统计键值为3的元素个数
 
 
 ## 附：java常用容器&方法
+
+[java常用容器&方法](./java常用容器&方法.md)
 
