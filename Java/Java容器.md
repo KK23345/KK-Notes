@@ -1,6 +1,23 @@
 # Java容器
 
-[toc]
+- [Java容器](#java--)
+  * [基本框架](#----)
+  * [Collection-List接口](#collection-list--)
+    + [ArrayList](#arraylist)
+    + [LinkedList](#linkedlist)
+    + [Vector](#vector)
+  * [Collection-Queue接口](#collection-queue--)
+    + [PriorityQueue](#priorityqueue)
+    + [ArrayDeque](#arraydeque)
+  * [Collection-Set接口](#collection-set--)
+    + [HashSet](#hashset)
+    + [TreeSet](#treeset)
+    + [LinkedHashSet](#linkedhashset)
+  * [Map接口](#map--)
+    + [HashMap](#hashmap)
+    + [TreeMap](#treemap)
+    + [HashTable](#hashtable)
+
 
 ## 基本框架
 
