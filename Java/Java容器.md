@@ -17,6 +17,7 @@
     + [HashMap](#hashmap)
     + [TreeMap](#treemap)
     + [HashTable](#hashtable)
+    + [LinkedHashMap](#LinkedHashMap)
 
 
 ## 基本框架
@@ -142,23 +143,37 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable 
 ```
 
-
+HashMap：基于哈希表实现，线程不安全。
 
 ### TreeMap
 
 ```java
-
+public class TreeMap<K,V>
+    extends AbstractMap<K,V>
+    implements NavigableMap<K,V>, Cloneable, java.io.Serializable
 ```
 
-
+TreeMap：基于红黑树实现，线程不安全。
 
 ### HashTable
 
 ```java
-
+public class Hashtable<K,V>
+    extends Dictionary<K,V>
+    implements Map<K,V>, Cloneable, java.io.Serializable
 ```
 
+HashTable：与HashMap类似，但线程安全。不过它是遗留类，目前使用ConcurrentHashMap来支持线程安全。
 
+### LinkedHashMap
+
+```java
+public class LinkedHashMap<K,V>
+    extends HashMap<K,V>
+    implements Map<K,V>
+```
+
+LinkedHashMap：继承HashMap，使用双向链表维护元素插入的顺序。
 
 <tt>[Java常用集合&方法](../数据结构与算法/java常用容器&方法.md)</tt>
 

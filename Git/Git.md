@@ -32,8 +32,6 @@ Git 项目的三个工作区域：
 
 [【参考/】手把手教你用git上传项目到GitHub](https://zhuanlan.zhihu.com/p/193140870)
 
-[error: failed to push some refs to...](https://its404.com/article/dietime1943/79398771)
-
 **上传本地项目到Github的基本步骤：**
 
 1. 建立本地仓库
@@ -78,5 +76,13 @@ Git 项目的三个工作区域：
    git push origin master(分支名)
    ```
 
+   拉取远程仓库改动到本地
+   
+   [error: failed to push some refs to...](https://its404.com/article/dietime1943/79398771)
+   
+   ```bash
+   git pull origin master(分支名)
+   ```
+   
    
 
