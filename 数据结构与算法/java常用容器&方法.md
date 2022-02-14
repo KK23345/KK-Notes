@@ -72,16 +72,16 @@ void sort(Comparator<? super E> c);
 
 #### LinkedList
 
-下面的方法都是实现<tt>Deque</tt>>接口中的方法，可作为队列或栈使用。
+下面的方法都是实现<tt>Deque</tt>接口中的方法，可作为队列或栈使用。
 
-| <tt>Deque</tt>接口 | 抛出异常                                 | 返回false/null                                    |
-| ------------------ | ---------------------------------------- | ------------------------------------------------- |
-| 队首添加元素       | void addFirst(E e);<br />void push(E e); | boolean offer(E e);<br />boolean offerFirst(E e); |
-| 队尾添加元素       | void addLast(E e);                       | boolean offerLast(E e);                           |
-| 删除队首元素       | E removeFirst();<br />E pop();           | E poll();<br />E pollFirst();                     |
-| 删除队尾元素       | E removeLast();                          | E pollLast();                                     |
-| 返回队首元素       | E getFirst();                            | E peek();<br />E peekFirst();                     |
-| 返回队尾元素       | E getLast();                             | E peekLast();                                     |
+| <tt>Deque</tt>接口 | 抛出异常                                 | 返回false/null                                   |
+| ------------------ | ---------------------------------------- | ------------------------------------------------ |
+| 队首添加元素       | void addFirst(E e);<br />void push(E e); | boolean offerFirst(E e);                         |
+| 队尾添加元素       | void addLast(E e);                       | boolean offer(E e);<br />boolean offerLast(E e); |
+| 删除队首元素       | E removeFirst();<br />E pop();           | E poll();<br />E pollFirst();                    |
+| 删除队尾元素       | E removeLast();                          | E pollLast();                                    |
+| 返回队首元素       | E getFirst();                            | E peek();<br />E peekFirst();                    |
+| 返回队尾元素       | E getLast();                             | E peekLast();                                    |
 
 ### Queue接口
 
@@ -163,7 +163,11 @@ V replace(K key, V value); //修改并返回key对应的oldvalue
 
 //查找k-v键值对
 boolean containsKey(Object key);    boolean containsValue(Object value);
-V get(Object key); //key存在 ? 返回v : null           
+V get(Object key); //key存在 ? 返回v : null
+
+//返回map中所有key或value组成的集合
+Collection<V> values();  
+Set<K> keySet();         
 ```
 
 ### HashMap

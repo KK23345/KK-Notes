@@ -1,6 +1,10 @@
 # LeetCode 刷题笔记
 
-tag：[二叉搜索树](#二叉搜索树)
+<tt>tag</tt>：
+
+[二叉树](#二叉树)、[二叉搜索树](#二叉搜索树)、[Morris遍历](#Morris遍历)、][双指针](#双指针)、[前缀和](#前缀和)、[差分数组](#差分数组)、[队列/栈](#队列/栈)、[堆](#堆)、
+
+[数据结构设计](#数据结构设计)、[图论](#图论)、[BFS/DFS](#暴力搜索算法)、[动态规划](#动态规划)、[其他经典算法](#其他经典算法)
 
 ## 二叉树
 
@@ -26,6 +30,14 @@ class TreeNode{
     }
 }
 ```
+
+### Morris遍历
+
+```java
+
+```
+
+
 
 ### EASY
 
@@ -1244,6 +1256,144 @@ public:
 };
 ```
 
+#### [508. Most Frequent Subtree Sum](https://leetcode-cn.com/problems/most-frequent-subtree-sum/)
+
+```java
+class Solution {
+    //key:子树和；value:子树和次数
+    HashMap<Integer, Integer> sumToCnt = new HashMap<>();
+    public int[] findFrequentTreeSum(TreeNode root) {
+        sumToCnt(root);
+        int maxCnt = Collections.max(sumToCnt.values()); //找出最大频次
+        ArrayList<Integer> resList = new ArrayList<>();
+        for(Integer key : sumToCnt.keySet()) {
+            if(sumToCnt.get(key) == maxCnt)
+                resList.add(key);
+        }
+        int[] res = new int[resList.size()];
+        for(int i = 0; i < resList.size(); i++) 
+            res[i] = resList.get(i);
+        return res;
+    }
+	//后序遍历，统计各子树和的频次
+    public int sumToCnt(TreeNode root) {
+        if(root == null) return 0;
+        int lSum = sumToCnt(root.left);
+        int rSum = sumToCnt(root.right);
+        int sum = root.val + lSum + rSum;
+        sumToCnt.put(sum, sumToCnt.getOrDefault(sum, 0) + 1); 
+        return sum;
+    } 
+}
+```
+
+#### [513. Find Bottom Left Tree Value](https://leetcode-cn.com/problems/find-bottom-left-tree-value/)
+
+```java
+class Solution {
+    public int findBottomLeftValue(TreeNode root) {
+        if(root.left == null && root.right == null) return root.val;
+        //int depth = maxDepth(root);
+        //int curLev = 1; //记录当前访问到的层数
+        TreeNode res = root;
+        ArrayDeque<TreeNode> q = new ArrayDeque<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            //if(curLev == depth) res = q.peek();
+            
+            //新思路，增加下面这行代码即可
+            res = q.peek(); //leftmost node就是每次层序遍历时的队首结点
+
+            int size = q.size();
+            for(int i = 0; i < size; i++){
+                TreeNode cur = q.poll();
+                if(cur.left != null) q.offer(cur.left);
+                if(cur.right != null) q.offer(cur.right);
+            }
+            //curLev++;
+        }
+        return res.val;
+    }
+    // 递归+层序遍历效率太低
+    // public int maxDepth(TreeNode root) {
+    //     if(root == null) return 0;
+    //     int lDepth = maxDepth(root.left);
+    //     int rDepth = maxDepth(root.right);
+    //     return 1 + Math.max(lDepth, rDepth);
+    // }
+}
+```
+
+#### [515. Find Largest Value in Each Tree Row](https://leetcode-cn.com/problems/find-largest-value-in-each-tree-row/)
+
+```java
+class Solution {
+    public List<Integer> largestValues(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if(root == null) return res;
+        ArrayDeque<TreeNode> q = new ArrayDeque<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            int size = q.size();
+            int max = Integer.MIN_VALUE;
+            for(int i = 0; i < size; i++){
+                TreeNode cur = q.poll();
+                max = Math.max(max, cur.val);
+                if(cur.left != null) q.offer(cur.left);
+                if(cur.right != null) q.offer(cur.right);
+            }
+            res.add(max);
+        }
+        return res;
+    }
+```
+
+#### [623. Add One Row to Tree](https://leetcode-cn.com/problems/add-one-row-to-tree/)
+
+```JAVA
+class Solution {
+    public TreeNode addOneRow(TreeNode root, int val, int depth) {
+        if(depth == 1){
+            TreeNode newRoot = new TreeNode(val);
+            newRoot.left = root;
+            return newRoot;
+        }
+        int curLev = 1; //当前遍历到的层次
+        ArrayDeque<TreeNode> q = new ArrayDeque<>();
+        q.offer(root);
+        while(!q.isEmpty()){
+            int size = q.size();
+            for(int i = 0; i < size; i++) {
+                TreeNode cur = q.poll();
+                if(curLev != depth-1) {
+                    if(cur.left != null) q.offer(cur.left);
+                    if(cur.right != null) q.offer(cur.right);
+                }else {
+                    TreeNode newLRoot = new TreeNode(val); //cur结点的新左子树
+                    TreeNode newRRoot = new TreeNode(val);
+                    TreeNode oLTree = cur.left; //cur结点的原左子树
+                    TreeNode oRTree = cur.right; 
+                    cur.left = newLRoot;
+                    newLRoot.left = oLTree;
+                    cur.right = newRRoot;
+                    newRRoot.right = oRTree;
+                }
+            }
+            curLev++;
+        }
+        return root;
+    }
+}
+```
+
+#### [652. Find Duplicate Subtrees](https://leetcode-cn.com/problems/find-duplicate-subtrees/)
+
+```java
+
+```
+
+
+
 ### HARD
 
 #### [297. Serialize and Deserialize Binary Tree](https://leetcode-cn.com/problems/serialize-and-deserialize-binary-tree/)  ***
@@ -1876,13 +2026,83 @@ ublic class Codec {
 }
 ```
 
+#### [450. Delete Node in a BST](https://leetcode-cn.com/problems/delete-node-in-a-bst/)
+
+1. 被删除的结点是叶子结点，直接删除；
+2. 该结点只有一个孩子结点，让这个孩子接替自己的位置；
+3. 该结点有两个孩子结点，需要找到该结点的右子树中最小结点(或左子树中最大结点) 来接替自己的位置。
+
+```java
+class Solution {
+    public TreeNode deleteNode(TreeNode root, int key) {
+        if(root == null) return null;
+        if(root.val == key) {
+            //情况1、2
+            if(root.left == null) return root.right;
+            if(root.right == null) return root.left;
+            //情况3 找到该结点的右子树中最小的结点接替自己的位置
+            TreeNode minNode = root.right; 
+            while(minNode.left != null) minNode = minNode.left; //右子树中的最小结点
+            root.val = minNode.val; //替换该结点的值
+            //向下递归，删除该最小结点(因为最小结点已经替换到该结点的位置)
+            root.right = deleteNode(root.right, minNode.val);
+        }else if(root.val > key) {
+            root.left = deleteNode(root.left, key);
+        }else {
+            root.right = deleteNode(root.right, key);
+        }
+        return root;
+    }
+}
+```
+
+#### [538. Convert BST to Greater Tree](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/)
+
+```java
+class Solution {
+    //思路1：先递归求出整棵树的累加和，在中序遍历得到结果。效率很低
+    int sum = 0;    //记录整棵BST的累加和
+    int preSum = 0; //记录当前结点之前的所有结点累加和
+    public TreeNode convertBST(TreeNode root) {
+        if(root == null) return null;
+        sum = sumOfTree(root);
+        inOrder(root);
+        return root;
+    }
+    public void inOrder(TreeNode root) {
+        if(root == null) return;
+        inOrder(root.left);
+        int temp = preSum; //先保存preSum的值
+        preSum += root.val;
+        root.val = sum - temp;
+        inOrder(root.right);
+    }
+    public int sumOfTree(TreeNode root) {
+        if(root == null) return 0;
+        return root.val 
+             + sumOfTree(root.left)
+             + sumOfTree(root.right);
+    }
+    //思路2：逆中序遍历
+    int sum = 0;
+    public TreeNode convertBST(TreeNode root) {
+        if(root == null) return null;
+        convertBST(root.right);
+        sum += root.val;
+        root.val = sum;
+        convertBST(root.left);
+        return root;
+    }
+}
+```
+
 
 
 ### HARD
 
-## 数组双指针
+## 双指针
 
-## 链表双指针
+
 
 ## 前缀和
 
