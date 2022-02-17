@@ -2,9 +2,9 @@
 
 <tt>tag</tt>：
 
-[二叉树](#二叉树)、[二叉搜索树](#二叉搜索树)、[Morris遍历](#Morris遍历)、][双指针](#双指针)、[前缀和](#前缀和)、[差分数组](#差分数组)、[队列/栈](#队列/栈)、[堆](#堆)、
+[二叉树](#二叉树)、[二叉搜索树](#二叉搜索树)、[Morris遍历](#Morris遍历)、[双指针](#双指针)、[前缀和](#前缀和)、[差分数组](#差分数组)、[队列/栈](#队列/栈)、
 
-[数据结构设计](#数据结构设计)、[图论](#图论)、[BFS/DFS](#暴力搜索算法)、[动态规划](#动态规划)、[其他经典算法](#其他经典算法)
+[堆](#堆)、[数据结构设计](#数据结构设计)、[图论](#图论)、[BFS/DFS](#暴力搜索算法)、[动态规划](#动态规划)、[其他经典算法](#其他经典算法)
 
 ## 二叉树
 
@@ -1389,6 +1389,166 @@ class Solution {
 #### [652. Find Duplicate Subtrees](https://leetcode-cn.com/problems/find-duplicate-subtrees/)
 
 ```java
+class Solution {
+    // 记录所有子树出现的频次; key:子树序列化，value:频次
+    HashMap<String, Integer> sTree = new HashMap<>();
+    // 记录重复子树的根结点
+    LinkedList<TreeNode> res = new LinkedList<>();
+
+    public List<TreeNode> findDuplicateSubtrees(TreeNode root) {
+        postOrder(root);
+        return res;
+    }
+    //后序遍历，返回子树序列化后的字符串
+    public String postOrder(TreeNode root) {
+        if(root == null) return "#";
+        String lStr = postOrder(root.left);
+        String rStr = postOrder(root.right);
+        String tStr = lStr + "," + rStr + "," + root.val;
+
+        int freq = sTree.getOrDefault(tStr, 0);
+        if(freq == 1) res.add(root); //子树出现频次=1,加入结果
+        sTree.put(tStr, freq+1);
+
+        return tStr;
+    }
+}
+```
+
+#### [654. Maximum Binary Tree](https://leetcode-cn.com/problems/maximum-binary-tree/)
+
+```java
+class Solution {
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        if(nums.length <= 0) return null;
+        return createTree(nums, 0, nums.length-1);
+    }
+    public TreeNode createTree(int[] nums, int low, int high) {
+        if(low > high) return null;
+        int max = Integer.MIN_VALUE;
+        int index = -1;
+        for(int i = low; i <= high; i++) {
+            if(nums[i] > max) {
+                index = i;
+                max = nums[index];
+            }
+        }
+        TreeNode root = new TreeNode(max);
+        root.left = createTree(nums, low, index-1);
+        root.right = createTree(nums, index+1, high);
+        return root;
+    }
+}
+```
+
+#### [655. Print Binary Tree](https://leetcode-cn.com/problems/print-binary-tree/)
+
+```java
+class Solution {
+    public List<List<String>> printTree(TreeNode root) {
+        int height = height(root);
+        int width = (1<<height) - 1;
+        String[][] res = new String[height][width];
+        for(String[] arr : res) Arrays.fill(arr, "");
+
+        preOrder(root, 0, width-1, 0, res);
+
+        List<List<String>> rList = new ArrayList<>(height);
+        for(String[] arr : res)
+            rList.add(Arrays.asList(arr));
+        return rList;
+    }
+    //lvl为遍历到的层次，从0开始
+    void preOrder(TreeNode root, int low, int high, int lvl, String[][] res) {
+        if(root == null || low > high) return;
+        int mid = (high-low)/2 + low;
+        res[lvl][mid] = "" + root.val;
+        preOrder(root.left, low, mid-1, lvl+1, res);
+        preOrder(root.right, mid+1, high, lvl+1, res);
+    }
+    int height(TreeNode root) {
+        if(root == null) return 0;
+        return Math.max(height(root.left), height(root.right)) + 1;
+    }
+}
+```
+
+#### [662. Maximum Width of Binary Tree](https://leetcode-cn.com/problems/maximum-width-of-binary-tree/)
+
+```java
+class Solution {
+    //思路：按照满二叉树的编号方式对结点编号:
+    //即父结点编号为i, 左孩子编号为2*i，右孩子编号为2*i+1
+
+    //记录每层最左侧结点的编号，当遍历到相同深度的结点时即可计算宽度
+    List<Integer> leftIds = new ArrayList<>();
+    int maxWidth = 1;
+    public int widthOfBinaryTree(TreeNode root) {
+        if(root == null) return 0;
+        preOrder(root, 1, 1);
+        return maxWidth;
+    }
+
+    void preOrder(TreeNode root, int id, int depth) {
+        if(root == null) return;
+        //先序遍历，第一次到达该深度的结点一定是最左侧结点
+        if(leftIds.size() == depth - 1) {
+            leftIds.add(id);
+        } else {
+            //数组下标0(depth-1)，对应根结点(depth=1)
+            maxWidth = Math.max(maxWidth, id - leftIds.get(depth - 1) + 1);
+        }
+        preOrder(root.left, id << 1, depth + 1);
+        preOrder(root.right, (id << 1) + 1, depth + 1);
+    }
+}
+```
+
+#### [687. Longest Univalue Path](https://leetcode-cn.com/problems/longest-univalue-path/)
+
+```java
+class Solution {
+    int res = 0;
+    public int longestUnivaluePath(TreeNode root) {
+        if(root == null) return 0;
+        postOrder(root, root.val);
+        return res;
+    }
+    //后序遍历，返回以root为根，值为parentVal的最长树枝长度
+    int postOrder(TreeNode root, int parentVal) {
+        if(root == null) return 0;
+        int lLen = postOrder(root.left, root.val);
+        int rLen = postOrder(root.right, root.val); 
+
+        res = Math.max(res, lLen + rLen);
+        if(root.val != parentVal) return 0;
+
+        return 1 + Math.max(lLen, rLen);
+    }
+}
+```
+
+#### [814. Binary Tree Pruning](https://leetcode-cn.com/problems/binary-tree-pruning/)
+
+```java
+class Solution {
+    public TreeNode pruneTree(TreeNode root) {
+        if(root == null) return null;
+
+        root.left = pruneTree(root.left);
+        root.right = pruneTree(root.right);
+        //删除值为0的叶子结点
+        if(root.val == 0 && root.left == null && root.right == null) 
+            return null;
+        
+        return root;
+    }
+}
+```
+
+#### [863. All Nodes Distance K in Binary Tree](https://leetcode-cn.com/problems/all-nodes-distance-k-in-binary-tree/)
+
+```java
 
 ```
 
@@ -2092,6 +2252,42 @@ class Solution {
         root.val = sum;
         convertBST(root.left);
         return root;
+    }
+}
+```
+
+#### [669. Trim a Binary Search Tree](https://leetcode-cn.com/problems/trim-a-binary-search-tree/)
+
+```java
+class Solution {
+    public TreeNode trimBST(TreeNode root, int low, int high) {
+        if(root == null) return null;
+        
+        if(root.val < low)
+            return trimBST(root.right, low, high);
+        if(root.val > high)
+            return trimBST(root.left, low, high);
+
+        root.left = trimBST(root.left, low, high);
+        root.right = trimBST(root.right, low, high);
+        return root;
+    }
+}
+```
+
+#### [701. Insert into a Binary Search Tree](https://leetcode-cn.com/problems/insert-into-a-binary-search-tree/)
+
+```java
+class Solution {
+    public TreeNode insertIntoBST(TreeNode root, int val) {
+        if(root == null) return new TreeNode(val);
+
+        if(root.val > val)
+            root.left = insertIntoBST(root.left, val);
+        if(root.val < val)
+            root.right = insertIntoBST(root.right, val);
+            
+        return root; 
     }
 }
 ```
