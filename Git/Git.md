@@ -78,11 +78,14 @@ Git 项目的三个工作区域：
 
    拉取远程仓库改动到本地
    
-   [error: failed to push some refs to...](https://its404.com/article/dietime1943/79398771)
-   
    ```bash
    git pull origin master(分支名)
    ```
    
-   
+
+## 3. 使用git时的一些问题
+
+[error: failed to push some refs to...](https://its404.com/article/dietime1943/79398771)
+
+[Solution for 'ssh: connect to host github.com port 22: Connection timed out' error](https://gist.github.com/Tamal/1cc77f88ef3e900aeae65f0e5e504794)
 

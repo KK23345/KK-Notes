@@ -1,4 +1,4 @@
-# Maven无法导包
+## Maven无法导包
 
 [参考](https://blog.csdn.net/HeyWeCome/article/details/104543411)
 
@@ -28,7 +28,13 @@
    
    ```
 
-3. 添加好后，就可以正常下载。但我还遇到了比较坑的问题，发现`parent`中的包依然爆红，其他依赖却没有这个问题。
+3. 添加好后，就可以正常下载。
+
+   
+   
+## 两个比较坑的问题
+
+   a.发现`parent`中的包依然爆红，其他依赖却没有这个问题。
 
    ```xml
    <parent>
@@ -39,7 +45,7 @@
    </parent>
    ```
 
-   思考后才发现没有在依赖`dependencies`中填写该依赖，在官网找到如下坐标
+   思考后发现没有在依赖`dependencies`中填写该依赖(应该是第一次使用的问题)，在官网找到如下坐标
 
    ```xml
    <dependency>
@@ -51,4 +57,13 @@
    ```
 
    导入后，发现上面的`parent`中的包也不爆红了，问题解决。
+
+   b.`pring-boot-maven-plugin`这个maven插件依赖爆红，这个在stackoverflow：[Plugin 'org.springframework.boot:spring-boot-maven-plugin:' not found](https://stackoverflow.com/questions/64639836/plugin-org-springframework-bootspring-boot-maven-plugin-not-found)中找到了如下解决方法：
+
+   ```xml
+   <!--需要添加该依赖的版本-->
+   <version>${project.parent.version}</version>
+   ```
+
+   
 
