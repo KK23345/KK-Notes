@@ -1,4 +1,4 @@
-# REST API
+# REST架构风格
 
 ## 简介
 
@@ -20,7 +20,7 @@
 
 ## RESTful API
 
-符合`REST`架构风格的 `Web API`（或 `Web 服务`）是 `*RESTful API*`。
+符合`REST`架构风格的 `Web API`（或 `Web 服务`）是 `RESTful API`。
 
 参考：
 
@@ -28,3 +28,7 @@
 
 - [RESTful接口详解](https://www.jianshu.com/p/7893169a7c93)
 
+优点：
+
+- 隐藏资源的访问行为，无法通过url得知对资源是何种操作
+- 书写简化
