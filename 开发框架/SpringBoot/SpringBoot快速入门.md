@@ -141,7 +141,7 @@ public class BookController {
 
 ### starter
 
-`parent`进行各个依赖版本的统一管理，而`starter`则是将一些固定技术搭配(如spring-web)的**依赖坐标的组合方式**整合到一起，帮助开发者减少依赖配置。
+`parent`进行各个依赖版本的统一管理，而`starter`(启动器) 则是将一些固定技术搭配(如spring-web)的**依赖坐标的组合方式**整合到一起，帮助开发者减少依赖配置。
 
 如下面的`spring-boot-starter-web`中，就整合了`web`开发时的依赖组合，而开发者只需要导入这一个坐标即可。
 
@@ -151,6 +151,7 @@ public class BookController {
     <artifactId>spring-boot-starter-web</artifactId>
 </dependency>
 <!--spring-boot-starter-web中定义了需要的依赖坐标-->
+......
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-tomcat</artifactId>
@@ -163,6 +164,7 @@ public class BookController {
     <version>5.3.15</version>
     <scope>compile</scope>
 </dependency>
+......
 ```
 
 总结：
@@ -175,7 +177,7 @@ public class BookController {
 `XXXApplication`类是工程创建时自带的类，运行该类中的`main`方法就可以运行整个工程。
 
 ```java
-//作为引导类的典型注解
+//作为引导类的典型注解，表示SpringBoot应用
 @SpringBootApplication
 public class QuickStartApplication {
 

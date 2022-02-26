@@ -12,3 +12,7 @@
 
 [SpringBoot整合其他技术](./SpringBoot整合其他技术)
 
+## SpringBoot自动装配原理
+
+[SpringBoot自动装配原理](./SpringBoot自动装配原理)
+

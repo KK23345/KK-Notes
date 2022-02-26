@@ -46,7 +46,8 @@
   @SpringBootApplication
   //打开该注解会发现源文件(SpringBootApplication.java)中仍有许多注解和代码：
   //而里面的
-  @SpringBootConfiguration //该注解表示该类是SpringBoot中的配置类
+  	@SpringBootConfiguration //该注解表示该类是SpringBoot的配置
+  	@EnableAutoConfiguration //该注解表示能自动配置
   ```
 
 ## 整合MyBatis
