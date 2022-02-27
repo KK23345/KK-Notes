@@ -175,5 +175,5 @@ public class LinkedHashMap<K,V>
 
 LinkedHashMap：继承HashMap，使用双向链表维护元素插入的顺序。
 
-<tt>[Java常用集合&方法](../数据结构与算法/java常用容器&方法.md)</tt>
+[Java常用集合&方法](../数据结构与算法/java常用容器&方法.md)
 
