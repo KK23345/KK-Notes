@@ -242,8 +242,10 @@ public void run() {
 ### 原子性和原子类
 
 - **原子操作**是不能被线程调度机制中断的操作。一旦操作开始，它就一定可以在切换到其他线程之前操作完毕。
+
 - 什么才是原子操作？
   通常来说，对域中的值做**赋值**和**返回操作**都是原子性的。原子性可以应用于除`long`和`double`之外的所有基本类型之上的简单操作（如读取和写入，注：**自增自减**和**+=**不是原子性的）。
+  
 - `volatile`关键字
   - JVM将long和double的64位变量的读写操作当作两个分离的32位操作来执行，因此可能会出现在进行读写操作时发生上下文切换。为了解决这种问题，可以在定义64位变量时使用`volatile`，就会获得**简单操作的原子性**。
   - 提供了应用中的**可视性**。如果一个域为`volatile`的，那么对这个域的写操作会被立即写入到主存中(即使使用本地缓存也会如此)，从而所有的读取(发生在主存中)操作都可以看到这个修改。但是，非volatile域上的原子操作不会刷新到主存中去，其他读取操作也看不到这个新值。
@@ -251,7 +253,10 @@ public void run() {
   - 如果多个任务同时访问某个域，那么这个域就应该被声明为`volatile`或被`synchronized`同步(当然同步也会导致主存刷新)。
   - 当一个域**依赖它之前的值**（如递增递减、+=），或受到其他域的限制，`volatile`就无法工作，并且它们是非线程安全的。
   - 专家级的程序员可以利用原子操作的性质来编写无锁(即不使用同步)代码，但通常尝试用原子操作来替换同步会带来很大的麻烦。所以使用synchronized是最安全也是首选的方式。
+  
 - **原子类**（`Atomic`）
+
+  <img src="Java并发.assets/image-20220301221307192.png" alt="image-20220301221307192" style="zoom:67%;" />
 
 ### ThreadLocal
 
@@ -300,26 +305,115 @@ public enum State {
 
 ### 中断
 
-- `Thread.interrupt()`：可中断被阻塞的任务
-- `InterruptedException`：
-- `Thread.interrupted()`：
+- `Thread.interrupt()`：可中断的一个线程，并设置线程的中断状态为`true`（不能中断IO阻塞和`synchronized`锁阻塞）。
+
+- `InterruptedException`：当调用`Thread.interrupt()`或`Thread.sleep(millis)`方法时，如果一个线程正处于`BLOCKED`、`WAITING`、`TIMED_WAITING`这三个状态 或 试图执行一个阻塞操作，将会抛出`InterruptedException`异常，从而提前终止该线程（进入`catch`子句，异常被捕获后，线程的中断状态会立即被置为`false`，即catch子句中线程的中断状态始终为`false`）。
+
+- `Thread.interrupted()`：检测当前线程是否被中断，若被中断返回true。
+
+  ```java
+  @override
+  public void run() {
+      while(!Thread.interrupted()) { //线程没被中断，继续执行循环
+          ......
+      }
+      //线程被中断，退出循环，结束线程。
+      //这种方式不用抛出异常
+  }
+  ```
+
+- 线程池中断
 
 ## 线程间的协作
 
-### join() P670
+### join() 
 
+- `join()`：一个线程a可在其他线程b之上调用`a.join()`方法。
+  - 效果：线程a将被挂起，直到线程b终止（即`b.isAlive()`为`false`）才能恢复执行；
+  - `a.join(millis)`：带超时参数，如果b在要求时间内没终止，`join()`方法总能返回来恢复a执行。
 
+### 使用Object类
+
+`Object`类含有协调线程的方法：
+
+- wait()：使该线程被挂起，进入无限期等待状态，直到因其他线程的运行而使某个条件满足时，其他线程会调用 `notify() / notifyAll()` 方法来唤醒该线程。
+  - 线程调用`wait()`方法后会释放对象锁，而`Thread.sleep(millis)`则不会让出资源；
+  - `wait() / notify() / notifyAll()`这些方法只能在同步方法或代码块中使用（即必须事先获得对象锁），否则会抛出`IllegalMonitorStateException`。而`Thread.sleep(millis)`不会释放锁，所以可以在非同步方法或代码块中使用。
+
+### 使用JUC类库
+
+`java.util.concurrent`类库中提供了显式的`Lock`类和`Condition`类来实现线程间的通信：
+
+- `Condition`类：是使用互斥并允许任务挂起的基本类。
+
+  - 可通过在`Condition`对象上调用`await()`方法来挂起一个线程，当外部条件满足时，可调用`signal() / signalAll()`方法来通知并唤醒在该`Condition`对象上挂起的线程
+
+  ```java
+  public class JUCTest {
+      private Lock lock = new ReentrantLock();
+      private Condition condition = lock.newCondition();
+      public void f1() {
+          lock.lock();
+          try {
+              //条件满足
+              condition.signalAll();
+          } finally {
+              lock.unlock();
+          }
+      }
+      public void f2() {
+          lock.lock();
+          try {
+              //等待条件
+              condition.await();
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          } finally {
+              lock.unlock();
+          }
+      }
+  }
+  ```
 
 ## 死锁
+
+由于`synchronized`、`Lock`以及其他加锁机制会使线程进入阻塞状态，如果多个线程之间陷入了相互等待的循环时，该状况称为**死锁**，此时所有线程都不能向前执行。
 
 ## JUC
 
 ### JUC简介
 
-### AQS
+Java SE 5的`java.util.concurrent`(JUC)类库引入了大量的新类，被设计用来解决并发问题，使用这些组件会使程序更加简单且健壮。
+
+### AQS原理
+
+- `AQS`：全称`AbstractQueuedSynchronizer 抽象队列同步器`，是JUC类库的核心，位于`j.u.c.locks`包下。
+
+  <img src="Java并发.assets/image-20220301220744973.png" alt="image-20220301220744973" style="zoom:67%;" />
+
+- 
+
+### AQS - CountDownLatch
+
+
+
+### AQS - CyclicBarrier
+
+
+
+### AQS - Semaphore
+
+
+
+### 其他组件
+
+
 
 ## 性能调优
 
+
+
 ## 高效并发
 
-[JVM-高效并发](./JVM-高效并发)
+[JVM-高效并发](./JVM-高效并发.md)
+
