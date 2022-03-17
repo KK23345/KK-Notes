@@ -414,6 +414,92 @@ Java允许在一个类的内部定义另一个类(接口、枚举或注解)，�
 
 ### Object
 
+`Object`类是所有类的父类，即Java所有的类都默认继承了`Object`。通用方法如下：
+
+- ```java
+  public final native Class<?> getClass();  // 返回对象运行时的实例类
+  //System.out.println(new A().getClass()); // 输出：class com.ljk.A
+  ```
+
+- ```java
+  public String toString() { // 返回对象的字符串表示形式
+      return getClass().getName() + "@" + Integer.toHexString(hashCode());
+  }
+  //System.out.println(new A().toString()); // 输出：com.ljk.A@28fd3dc1
+  ```
+
+- ```java
+  //判断两个对象引用是否指向同一个对象，比较两个对象的内存地址是否相等
+  //即对象是否等价
+  public boolean equals(Object obj) { 
+      return (this == obj); 
+  }
+  
+  public native int hashCode(); // 返回对象的hash值
+  ```
+
+  - 等价的两个对象散列值⼀定相同，但散列值相同的两个对象不⼀定等价
+
+    - 因为计算哈希值具有随机性，两个值不同的对象可能计算出相同的哈希值
+    - 所以在重写`equals() `⽅法时应当总是重写` hashCode() `⽅法，保证等价的两个对象哈希值也相等
+  
+  - `String`类（Integer...等大部分类）重写了`equals()`方法和` hashCode() `⽅法
+  
+    - ```java
+      public boolean equals(Object anObject) {
+          // 两个对象引用(地址)相等，返回true
+          if (this == anObject) { 
+              return true;
+          }
+          // 或者，两个字符串内容完全一致，也返回true
+          if (anObject instanceof String) {
+              String anotherString = (String)anObject;
+              int n = value.length;
+              if (n == anotherString.value.length) {
+                  char v1[] = value;
+                  char v2[] = anotherString.value;
+                  int i = 0;
+                  while (n-- != 0) {
+                      if (v1[i] != v2[i])
+                          return false;
+                      i++;
+                  }
+                  return true;
+              }
+          }
+          return false;
+      }
+      public int hashCode() {...}
+      ```
+  
+    - `==` & `equals()`：`==`只比较  地址（引用类型）或  值（基本类型）是否相等，而重写的`equals()`还会判断 引用类型的内容 是否一致。
+  
+      ```java
+      String st3 = new String("12321");
+      String st4 = new String("12321");
+      System.out.println(st3.equals(st4)); // true
+      System.out.println(st3 == st4);      // false
+      // 即st3和st4的引用不相等，但内容一致
+      ```
+  
+- ```java
+  //访问权限是protected，一个类不显式去重写clone()，其它类就不能直接去调用该类实例的clone()方法
+  protected native Object clone() throws CloneNotSupportedException;
+  ```
+  
+  - 一个类要想调用`clone()`方法，必须实现`Cloneable`接口，否则会抛出`CloneNotSupportedException`异常
+  - 浅拷贝：拷⻉对象和原始对象的指向同⼀个对象，不会为拷贝的对象重新分配内存。`clone()`方法是浅拷贝。
+  - 深拷贝：拷⻉对象和原始对象的指向不同对象，会为拷贝的对象重新分配内存。
+  
+- 与**线程间的协作**有关的方法整理在了 [Java并发](./Java并发)
+
+  ```java
+  public final native void notify()
+  public final native void notifyAll()
+  public final native void wait(long timeout) throws InterruptedException
+  public final void wait(long timeout, int nanos) throws InterruptedException
+  public final void wait() throws InterruptedException
+  ```
 
 
 ### Collections
@@ -480,17 +566,59 @@ public enum Direction [extends Enum]{
 
 ### String
 
-### StringBuilder
+```java
+public final class String
+    implements java.io.Serializable, Comparable<String>, CharSequence {
+    //Java8采用char数组作为存储结构，Java9之后改用byte数组
+    private final char value[]; 
+}
+```
 
-### StringBuffer
+- ```java
+  //创建字符串的方式
+  String s1 = "Runoob";           // String 直接创建，会直接放入字符串常量池中
+  String s2 = "Runoob";           // String 直接创建
+  String s3 = s1;                 // 相同引用
+  String s4 = new String("Runoob"); // String 对象创建
+  String s5 = new String("Runoob"); // String 对象创建
+  ```
+
+  <img src="Java基础.assets/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2tra2RqYmI=,size_16,color_FFFFFF,t_70.png" alt="在这里插入图片描述" style="zoom:50%;" />
+
+  - `“Runoob” `属于字符串字⾯量，**编译时期**会在 常量池( `Constract Pool` ) 中创建⼀个字符串引用，指向该字⾯量。
+    - 注：`JVM`中将常量池称为**运行时常量池**（`Runtime Constract Pool`），是方法区（`Method Area`）的一部分。并且，可以在**运行期间**将新的常量放入池中，如调用`String`类的`intern()`方法。
+  - 使⽤ `new` 的⽅式会在 堆（`heap`）中创建⼀个字符串对象；同时，如果常量池中没有该字面量，也会在常量池中也新建一个指向该字面量的对象。
+
+- `String`字符串不可变
+
+  - `String`类用`final`修饰，既不能被继承；
+  - `value[]`数组声明为`final`，即数组引用初始化后就不能指向其他对象（虽然数组内容可以改变，但由于使用`private`修饰并且`String`类没有提供访问该数组的方法，所以`String`字符串的值是不可变的）。
+  - `String`类中每一个看起来会修改String值的方法，实际上都是创建了一个全新的String对象。
+  - 不可变的优点
+    - 保证字符串的`hash`值不变，只需计算一次；
+    - 如果⼀个`String`对象已经被创建了，那么就会从常量池中取得引⽤。只有 String 是不可变的，才可能使⽤常量池；
+    - 可保证参数不可变，更安全；
+    - 线程安全。
+
+### StringBuilder & StringBuffer
+
+
 
 ### 格式化输出
 
+[【参考】Java格式化输出的四种方法](https://blog.csdn.net/qq_44111805/article/details/112850550)
+
 #### 正则表达式
+
+
 
 ### Scanner
 
+
+
 ### StringTokenizer
+
+
 
 ## 动态代理
 
@@ -507,6 +635,8 @@ transient
 ## 注解
 
 ## Java8新特性
+
+### lamada表达式
 
 ## 参考
 
