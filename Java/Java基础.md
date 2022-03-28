@@ -353,7 +353,7 @@ Java允许在一个类的内部定义另一个类(接口、枚举或注解)，�
 
 使用内部类可以对只在一处使用的类进行分组，提高封装性，增强代码可读性和可维护性。
 
-- **成员内部类**：相当于类的一个成员，在内部类中不能定义`static`变量和方法，但可以使用`final`和`abstract`以及各种访问修饰符。
+- 成员内部类：相当于类的一个成员，在内部类中不能定义`static`变量和方法，但可以使用`final`和`abstract`以及各种访问修饰符。
 
   ```java
   public class OuterClass{
@@ -373,12 +373,12 @@ Java允许在一个类的内部定义另一个类(接口、枚举或注解)，�
   }
   ```
 
-- **局部内部类：**在方法中定义的类，相当于方法的局部变量，不能使用`static`以及所有访问修饰符，但可以使用`final`和`abstract`
+- 局部内部类：在方法中定义的类，相当于方法的局部变量，不能使用`static`以及所有访问修饰符，但可以使用`final`和`abstract`
 
   - 可以访问外层类成员，但若要访问所在方法的参数和局部变量，需要用`final`修饰参数和变量
   - `static`方法中的内部类可以访问外层类的`static`成员，但不能访问实例成员
 
-- **匿名内部类：**用于某个类只需要使用一次，此时可以将类的定义和创建一起完成
+- 匿名内部类：用于某个类只需要使用一次，此时可以将类的定义和创建一起完成
 
   ```java
   public static void main(String[] args){
@@ -389,7 +389,7 @@ Java允许在一个类的内部定义另一个类(接口、枚举或注解)，�
   }
   ```
 
-- **静态内部类：**它与成员内部类有较大的区别
+- 静态内部类：它与成员内部类有较大的区别
 
   - 静态内部类可以定义静态成员，成员内部类不行
   - 静态内部类只能访问外层类的静态成员，成员内部类可以访问外层类的实例和静态成员
@@ -600,43 +600,380 @@ public final class String
     - 可保证参数不可变，更安全；
     - 线程安全。
 
+[String有没有长度限制](https://hollischuang.gitee.io/tobetopjavaer/#/basics/java-basic/length-of-string)
+
 ### StringBuilder & StringBuffer
 
+`StringBuilder`和`StringBuffer`都是可变字符串，使用方法基本类似
 
+- ```java
+  public final class StringBuilder extends AbstractStringBuilder
+      implements java.io.Serializable, CharSequence
+  
+  public final class StringBuffer extends AbstractStringBuilder
+      implements java.io.Serializable, CharSequence
+  ```
+
+- `StringBuilder`：线程不安全，执行速度快
+
+- `StringBuffer`：线程安全（使用`synchronized`进行同步），执行速度较慢
+
+- 二者的方法类似，在单线程情况下优先选择`StringBuilder`
+
+  ```java
+  //构造函数
+  public StringBuilder();              public StringBuffer();
+  public StringBuilder(String str);    public StringBuilder(String str);
+  
+  str.toString();                           //返回一个与缓冲区内容相同得字符串
+  str.append(String _str/ char c);          //追加一个字符串或字符
+  str.insert(int i, String _str/ char c);   //在第i个位置插入一个字符串或字符
+  str.reverse();                            //反转字符串
+  str.delete(int beginIndex, int endIndex); //删除字符串[begin,end)
+  ```
 
 ### 格式化输出
 
-[【参考】Java格式化输出的四种方法](https://blog.csdn.net/qq_44111805/article/details/112850550)
+[Java格式化输出的四种方法](https://blog.csdn.net/qq_44111805/article/details/112850550)
 
 #### 正则表达式
 
+[Java正则表达式详解](http://c.biancheng.net/view/5812.html)
 
+[正则表达式生成器](https://www.sojson.com/regex/generate)
 
 ### Scanner
 
+```java
+import java.util.Scanner
+public class ScannerDemo {
+	 public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in); //从键盘接收数据
+		//next方式接收
+		while(sc.hasNext()) {
+			String str = sc.next(); 
+		}
+		//nextLine方式接收
+		while(sc.hasNextLine()) {
+			String str = sc.nextLine();
+		}
+		//接受int或float等数据类型
+		while(sc.hasNextInt()) {
+			int i = sc.nextInt(); //其余数据类型相似
+		}
+		sc.close(); //不要忘记关闭
+	}
+}
+```
 
+`next()`和`nextLine()`区别：
 
-### StringTokenizer
+- `next()`
+  - 一定要读取到有效字符后才可以结束输入
+  - 对输入有效字符之前遇到的空格，next() 方法会自动将其去掉。
+  - 只有输入有效字符后才将其后面输入的空格作为分隔符或者结束符。
+  - next() 不能得到带有空格的字符串。
+- `nextLine()`
+  - 以Enter为结束符，也就是说 `nextLine()`方法返回的是输入回车之前的所有字符。
 
-
-
-## 动态代理
-
-## 序列化
-
-transient
 
 ## 异常
 
+### 异常概念&层次结构
+
+- 异常：指程序在运行期间可能出现的错误事件，但并不是所有的错误都是异常。与异常相关的两大类: `Exception`类 和 `Error`类 都继承了  `Throwable`类(所有异常的父类) 。
+
+  - `Error`：指`JVM`无法处理的错误。此类异常发生时，`JVM`会选择终止线程并打印错误信息。(注：`Error`也可捕获，但通常不建议这样做)
+  - `Exception`：指程序本身可以处理的异常。又可分为两类：
+    - 受检异常（Checked Exception）：此类异常如果没有被处理（`catch` / `throw` / `throws`）的话，就无法通过编译。
+      - 受检异常包括：除`RuntimeException`及其子类外，其他的`Exception`类及其子类。
+    - 非受检异常（Uncheked Exception）：此类异常不被处理也可通过编译，需要自己判断是否捕获和处理。
+      - 非受检异常包括：`RuntimeException`及其子类。
+
+- 异常层次结构如下：(红色为受检异常，蓝色为非受检异常)
+
+  ![image-20220328164849269](Java基础.assets/image-20220328164849269.png)
+
+  
+
+### 异常处理
+
+#### try-catch-finally 
+
+```java
+public class Test {
+	public static void main(String[] args) {
+		//System.out.println(1/0);
+		try { //监控区域
+            
+			System.out.println(1/0);
+            
+		} catch (ArithmeticException e) { //捕获异常
+            
+            //处理异常
+			e.printStaceTrace(); //打印错误的栈信息
+			System.out.println("分母不能为0");
+            
+		} finally { //处理善后工作，如IO、资源关闭等
+            
+			System.out.println("结束");
+            
+		} //finally区域可以不要，但如果没有catch块就必须添加finally块
+		
+		//catch可以有多个，但应该先写层次低的异常
+		try {
+			
+		} catch (Error e) {
+			
+		} catch (Exception e) {
+			
+		} catch (Throwable e) {
+
+		}
+	}
+}
+```
+
+- 注：当 try 语句和 finally 语句中都有 return 语句时，try 语句块中的 return 语句会被忽略。
+
+  这是因为 try 语句中的 return 返回值会先被暂存在一个本地变量中，当执行到 finally 语句中的 return 之后，这个本地变量的值就变为了 finally 语句中的 return 返回值。
+
+- `finally`块中的代码不是一定会被执行。如下：
+
+  ```java
+  try {
+      System.out.println("Try to do something");
+      throw new RuntimeException("RuntimeException");
+  } catch (Exception e) {
+      e.printStaceTrace();
+      // 终止当前正在运行的Java虚拟机
+      System.exit(1);
+  } finally {
+      System.out.println("Finally");
+  }
+  ```
+
+  
+
+#### throw / throws
+
+- `throw`：在方法中使用；`throws`：在方法名之后使用。都会抛出异常。
+
+  ```java
+  public class Test {
+  	public static void main(String[] args) {
+  		try {
+  			new Test().test(1,0);
+  		} catch (ArithmeticException e) {
+  			e.printStaceTrace(); 
+  		}
+  	}
+  	//假设此方法中处理不了这个异常，可以在方法上抛出异常
+  	public void test(int a, int b) throws ArithmeticException {
+  		if(b == 0) {
+  			throw new ArithmeticException();
+  		} /*catch (ArithmeticException e) {
+              //可以选择在该方法中捕获，或者通过throws向上级抛出，让其它方法捕获处理
+          } */
+  	}
+  }
+  
+  ```
+
+#### try-with-resources
+
+Java 7中引入，无需再在`finally`块中释放或关闭`try`块中使用的资源，更易于资源管理，代码也更简单清晰。（注：适用于任何实现了`java.lang.AutoCloneable`或`java.io.Closeable`的类，如各种IO流）
+
+- 使用`try-catch-finally`
+
+  ```java
+  BufferedWriter writer = null;
+  try {
+      writer = new BufferedWriter(new FileWriter(fileName));
+      //...
+  } catch (IOException e) {
+      //...
+  } finally {
+      try { //关闭资源
+          if (writer != null)
+              writer.close();
+      } catch (IOException e) {
+         // handle the exception
+      }
+  }
+  ```
+
+- 使用`try-with-resources`
+
+  ```java
+  try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName)); 
+      //可在括号中声明多个资源，用分号隔开。并且，越早声明的资源越晚被关闭。
+     ) {
+      writer.write(str); 
+      //...
+  } catch(IOException e) {
+      //...
+  } finally {
+      
+  }
+  ```
+
+  可以看到，无需再手动关闭资源，代码更加简单和清晰。
+
+- `try-with-resources`原理：在`try`语句括号中打开的资源仅在此处和现在需要。`try`块中完成工作后，将立即调用`.close()`方法。即使在try块中抛出异常，无论如何都会关闭这些资源。（注：`catch` 和`finally` 块中的语句在资源关闭后才会运行）
+
+- `try-with-resources`的异常处理机制：
+
+  - `try`块中没有发生异常：先调用 `.close()`方法，关闭时如果发生异常，会在`catch `块捕捉并处理异常。
+  - `try`块中发生异常：自动调用 `.close()`方法，如果 `.close()`也发生异常，catch 块只会捕捉`try`块抛出的异常，`.close()`方法产生的异常会在catch 中被**压制**，但是你可以在`catch`块中，用 `Throwable.getSuppressed()`方法来获取到压制异常的数组。
+
+
+
 ## 泛型
+
+### 泛型思想
+
+- **泛型**：本质是参数化类型，即为类、接口或方法指定一个类型参数 (注意类型是对象，不能是基本类型如int、double等)，这意味着编写的代码可以对多种不同类型的对象重用。
+
+- 泛型提供了 **编译时** **类型安全检测机制**，可防止插入错误的对象。因此泛型可以使程序更易读，也更安全。考虑如下代码：
+
+  ```java
+  List list = new ArrayList(); //list可以
+  list.add("123"); list.add(123);
+  for(int i = 0; i < list.size(); i++)
+      String a = list.get(i);  //引发ClassCastException 异常
+  ```
+
+  这是由于把对象“丢进”集合时，集合丢失了对象的状态信息，集合只知道它盛装的是 `Object`，因此取出集合元素后通常还需要进行强制类型转换。这种强制类型转换既增加了编程的复杂度，也可能引发 ClassCastException 异常。
+
+  但使用泛型后，问题就被完美解决：
+
+  ```java
+  List<String> list = new ArrayList<>();
+  list.add(123); //会报错
+  ```
+
+  使用泛型进行初始化可以很容易的得到`list`中存储的是`String`对象并且只能存储`String`对象，提高了代码的易读性和安全性。
+
+### 泛型类/接口/方法
+
+按照约定，类型参数名使用单个大写字母表示，常用的有：E(表示元素)、K(表示键)、N(表示数字)、T(表示类型)、V(表示值)。
+
+- 泛型类
+
+  ```java
+  public class Generic<T> {
+      private T elem;
+      public Generic(T elem) {
+          this.elem = elem;
+      }
+      //注：getElem并不是一个泛型方法
+      public T getElem() {
+          return elem;
+      }
+  }
+  //实例化
+  Generic<String> s = new Generic<>("123");
+  Generic<Integer> s = new Generic<>(123);
+  ```
+
+- 泛型接口
+
+  ```java
+  //定义泛型接口
+  public interface Generic<T> {
+      public T func();
+  }
+  //实现泛型接口
+    // 1.不指定泛型类型，声明类时也要添加泛型
+  public class G1<T> implements Generic<T> {
+      @override
+      public T func() {...}
+  }
+    // 2.指定泛型类型
+  public class G1 implements Generic<String> {
+      @override
+      public String func() {...}
+  }
+  ```
+
+- 泛型方法：调用方法时指明泛型具体类型，在泛型类或其他类中均可声明。
+
+  ```java
+  public static <T> T genericFun(T[] arr) {
+      return array[rand.nextInt(arr.length - 1)];
+  }
+  ```
+
+  注：`public`后的 `<T>` 声明此方法是泛型方法，不可省去
+
+### 类型通配符
+
+- **E** - Element (在集合中使用，因为集合中存放的是元素)
+- **T** - Type（Java 类）
+- **K** - Key（键）
+- **V** - Value（值）
+- **N** - Number（数值类型）
+- **？**- 表示不确定的 java 类型
+
+有界类型参数：当需要限制泛型类型时（类型是某个类的子类），可使用`extends`关键字。如：
+
+```java
+//泛型类
+public class Generic<T extends Number> { ... }
+
+//泛型方法，声明时必须也添加界限：<T extends Number>
+public static <T extends Number> T genericFun(Generic<? extends Number> o) {...}
+```
+
+### 类型擦除
+
+当实例化泛型类型时，编译器使用一种叫**类型擦除**（`type erasure`）的技术转换这些类型。在编译时，编译器将清除类和方法中所有与类型参数有关的信息，并且在对象进入和离开方法的边界处添加类型检查和类型转换的方法。（即Java中的泛型，只在编译阶段有效，泛型信息不会进入到运行时阶段）
+
+类型擦除可让使用泛型的Java应用程序与之前不使用泛型类型的Java类库和应用程序兼容。
 
 ## 反射
 
+- `Class`对象：当编译一个新类时，会产生一个同名的`.class` 文件，该文件内容保存着`Class`对象（包含了与类有关的信息）。
+
+- 反射：在运行期，可通过反射获得并调用类的所有属性和方法。可通过下面的方法在运行期间获得`Class`对象：
+
+  - `Class.forName("类的全限定名")`：无需获得对象实例就可得到类的信息
+  - `Object`类中的`getClass()`方法：需拥有类的对象，再执行行`对象.getClass()`
+  - `类名.class`：此方法还可以用于接口、数组以及基本数据类型(如int.class)
+
+- `java.lang.reflect`类库：通过上面的方法得到`Class`后，可通过下面的类的方法操纵类的属性和方法。
+
+  ```java
+  Class<?> obj = Class.forName("com.kk.ClassName");
+  ```
+
+  - `Field`：提供了获取当前对象的成员变量的类型以及重新设值的方法。 [Java Field类](http://www.51gjie.com/java/791.html)
+  - `Method`：
+  - `Constructor`：
+
+- 反射的优缺点：
+
+  - 优点：
+    - 能够运行时动态获取或创建类的实例，提高系统的灵活性和扩展性；
+    - 为各种框架提供开箱即用的功能提供了便利。
+  - 缺点：
+    - 反射会消耗一定的系统资源，如果不需要动态地创建一个对象，那么就不需要用反射；
+    - 反射调用方法时可以忽略权限检查，获取这个类的私有方法和属性，因此可能会破坏类的封装性而导致安全问题。
+
 ## 注解
+
+注解（`Annontation`）：是附加在代码中的一些元信息，用于一些工具在编译、运行时进行解析和使用，起到说明、配置的功能。
+
+[Java(注解和反射)](https://blog.csdn.net/kkkdjbb/article/details/115160170)
 
 ## Java8新特性
 
 ### lamada表达式
+
+### Optional类
+
+### Stream流
 
 ## 参考
 
