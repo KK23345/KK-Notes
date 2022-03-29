@@ -261,10 +261,105 @@ public void run() {
 ### ThreadLocal
 
 - 防止共享资源冲突的第二种方式：**根除对变量的共享**。
-- `java.lang.ThreadLocal`类实现了**创建和管理线程本地存储**。
-  - 线程本地存储：是一种自动化机制，可为**使用相同变量**的每个**不同线程**创建**不同的存储**，即每个线程`Thread`拥有一份自己的**副本变量**，多个线程互不干扰。
 
-[ThreadLocal底层分析](./ThreadLocal底层分析)
+- `java.lang.ThreadLocal`类实现了**创建和管理线程本地存储**变量。
+  
+  - 线程本地存储：是一种自动化机制，可为**使用相同变量**的每个**不同线程**创建**不同的存储**，即每个线程`Thread`拥有一份自己的**变量副本**，多个线程互不干扰。可通过`get() / set()`方法更改线程的数据。
+  
+- `ThreadLocal`底层分析：
+
+  ```java
+  public class ThreadLocal<T> { //泛型类
+  }
+  ```
+
+  ```java
+  //set方法
+  public void set(T value) {
+      Thread t = Thread.currentThread(); //获得当前线程
+      ThreadLocalMap map = getMap(t);    //获得当前线程的map对象
+      /* Thread类 中定义了该成员变量
+       * ThreadLocal.ThreadLocalMap threadLocals = null;
+       *
+       * ThreadLocal类提供了获得map的方法
+       * ThreadLocalMap getMap(Thread t) {
+       *     return t.threadLocals;
+  	 *}
+  	 *
+       * ThreadLocalMap是 ThreadLocal的静态内部类, 用来维护线程本地变量
+       * static class ThreadLocalMap {
+       		//键值对使用的是弱引用，当没有强引用指向 ThreadLocal 实例时，它可被回收，从而避免内存泄露
+       		static class Entry extends WeakReference<ThreadLocal<?>> {
+              	Object value;
+              	Entry(ThreadLocal<?> k, Object v) {
+                  	super(k);
+                  	value = v;
+              	}
+          	}
+       * }
+  	 */
+      if (map != null)
+          map.set(this, value); // 将value的副本存入map中
+      	/* ThreadLocalMap的set方法
+      	 * private void set(ThreadLocal<?> key, Object value)
+      	 */
+      else
+          createMap(t, value);
+      	/* ThreadLocal类
+      	 * void createMap(Thread t, T firstValue) {
+          		t.threadLocals = new ThreadLocalMap(this, firstValue);
+      	 * }
+      	 */
+  }
+  
+  ```
+
+  ```java
+  //get方法
+  public T get() {
+      Thread t = Thread.currentThread();
+      ThreadLocalMap map = getMap(t); //获得当前线程的map对象
+      if (map != null) { //map不为空
+          ThreadLocalMap.Entry e = map.getEntry(this); //获得当前ThreadLocal对象的键值对
+          if (e != null) {
+              @SuppressWarnings("unchecked")
+              T result = (T)e.value; //返回value
+              return result;
+          }
+      }
+      return setInitialValue(); //map为空返回设定的初始值，为null
+      /*private T setInitialValue() {
+          T value = initialValue();
+          
+          Thread t = Thread.currentThread();
+          ThreadLocalMap map = getMap(t);
+          if (map != null)
+              map.set(this, value);
+          else
+              createMap(t, value);
+              
+          return value; //返回调用initialValue()方法后的初值，由下面的方法得该初值为null
+          /* protected T initialValue() {
+          	return null;
+     	    }
+      }*/
+      
+      //当然，也可以再创建ThreadLocal对象时，重写initialValue方法，重新赋初值
+      /*ThreadLocal<Integer> local = new ThreadLocal<>(){
+          @overtirde
+          protected Integer initialValue() {
+          	return 0;
+     	    }
+      }*/
+  }
+  ```
+
+  综上，可以发现每个线程都维护一个`ThreadLocalMap`来存储`ThreadLocal-value`键值对，`set / get`方法仅对该线程的map中的键值对进行操作，从而保证线程安全。
+
+  注：
+
+  - 每个线程都维护这样一个map会占用大量内存，如果这些映射一直存在，很容易导致内存不足，因此`key`(即`ThreadLocal`)为 弱引用(`WeakReference`)，这样当内存不够时GC会自动回收这些`key`。
+  - 内存泄漏问题：由于`value`为强引用，所以如果`ThreadLocal`没有被外部强引用，GC时`key`会被清理而`value`不会。这会出现`key`为null的情况，使得对应的`value`无法被回收，导致内存泄漏。（不过`ThreadLocal`已经考虑了这种情况，在`get / set / remove`方法被调用时，会清理掉`key`为null的记录）
 
 ## 任务终结
 
@@ -391,17 +486,34 @@ Java SE 5的`java.util.concurrent`(JUC)类库引入了大量的新类，被设�
 
   <img src="Java并发.assets/image-20220301220744973.png" alt="image-20220301220744973" style="zoom:67%;" />
 
-- 
+- ```java
+  /**
+   * Provides a framework for implementing blocking locks and related
+   * synchronizers (semaphores, events, etc) that rely on
+   * first-in-first-out (FIFO) wait queues.
+   */
+  public abstract class AbstractQueuedSynchronizer
+      extends AbstractOwnableSynchronizer
+      implements java.io.Serializable 
+  ```
 
-### AQS - CountDownLatch
+  注释说明基于`AQS`可以实现许多有用且高效的同步器，如`ReentrantLock`、`Semaphore`等。
+
+- `AQS`原理分析
+
+  https://www.cnblogs.com/waterystone/p/4920797.html
+
+  https://www.cnblogs.com/chengxiao/archive/2017/07/24/7141160.html
+
+### CountDownLatch
 
 
 
-### AQS - CyclicBarrier
+### ACyclicBarrier
 
 
 
-### AQS - Semaphore
+### Semaphore
 
 
 
