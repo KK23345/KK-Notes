@@ -68,6 +68,8 @@ Git 项目的三个工作区域：
 
    ```bash
    git remote add origin 仓库的SSH地址
+   
+   git remote rm origin  #删除远程连接
    ```
 
 5. 将改动提交的github仓库
@@ -89,3 +91,4 @@ Git 项目的三个工作区域：
 
 [Solution for 'ssh: connect to host github.com port 22: Connection timed out' error](https://gist.github.com/Tamal/1cc77f88ef3e900aeae65f0e5e504794)
 
+[fatal: refusing to merge unrelated histories](https://developer.aliyun.com/article/614459)
