@@ -12,7 +12,7 @@
 
 - [Java基础](./Java/Java基础.md)
 
-- [Java IO](./Java/Java IO.md)
+- [JavaIO](./Java/JavaIO.md)
 - [Java容器](./Java/Java容器.md)
 - [Java并发](./Java/Java并发.md)
 
