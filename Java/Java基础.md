@@ -1,5 +1,64 @@
 # Java基础
 
+- [Java基础](#java基础)
+  * [Java简介](#java简介)
+    + [JVM、JRE、JDK](#jvm-jre-jdk)
+    + [字节码](#字节码)
+    + [编码方式](#编码方式)
+  * [数据类型](#数据类型)
+    + [基本数据类型](#基本数据类型)
+    + [包装类型](#包装类型)
+    + [包装类常用方法](#包装类常用方法)
+  * [基本语法和运算](#基础语法和运算)
+    + [标识符命名](#标识符命名)
+    + [数组](#数组)
+    + [运算符](#运算符)
+    + [类型转换](#类型转换)
+    + [值传递](#值传递)
+    + [可变长参数](#可变长参数)
+  * [关键字](#关键字)
+    + [static](#static)
+    + [final](#final)
+    + [instanceof](#instanceof)
+  * [面向对象](#面向对象)
+    + [面向对象与面向过程](#面向对象与面向过程)
+    + [构造函数](#构造函数)
+    + [封装、继承、多态](#封装、继承、多态)
+    + [访问权限](#访问权限)
+    + [抽象类&接口](#抽象类&接口)
+    + [内部类](#内部类)
+  * [常用类](#常用类)
+    + [Math](#math)
+    + [Object](#object)
+    + [Collections](#collections)
+    + [Arrays](#arrays)
+    + [时间](#时间)
+    + [枚举Enum](#枚举enum)
+  * [字符串](#字符串)
+    + [String](#string)
+    + [StringBuilder & StringBuffer](#stringbuilder & stringbuffer)
+    + [格式化输出](#-----)
+    + [正则表达式](#正则表达式)
+    + [Scanner](#scanner)
+  * [异常](#异常)
+    + [异常概念&层次结构](#异常概念&层次结构)
+    + [异常处理](#异常处理)
+      - [try-catch-finally](#try-catch-finally)
+      - [throw / throws](#throw---throws)
+      - [try-with-resources](#try-with-resources)
+  * [泛型](#泛型)
+    + [泛型思想](#泛型思想)
+    + [泛型类/接口/方法](#泛型类/接口/方法)
+    + [类型通配符](#类型通配符)
+    + [类型擦除](#类型擦除)
+  * [反射](#反射)
+  * [注解](#注解)
+  * [Java8新特性](#java8新特性)
+    + [lamada表达式](#lamada表达式)
+    + [Optional类](#optional类)
+    + [Stream流](#stream流)
+  * [参考](#参考)
+
 ## Java简介
 
 ### JVM、JRE、JDK
@@ -636,7 +695,7 @@ public final class String
 
 [Java格式化输出的四种方法](https://blog.csdn.net/qq_44111805/article/details/112850550)
 
-#### 正则表达式
+### 正则表达式
 
 [Java正则表达式详解](http://c.biancheng.net/view/5812.html)
 
