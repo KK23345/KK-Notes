@@ -36,8 +36,8 @@
     + [枚举Enum](#枚举enum)
   * [字符串](#字符串)
     + [String](#string)
-    + [StringBuilder & StringBuffer](#stringbuilder & stringbuffer)
-    + [格式化输出](#-----)
+    + [StringBuilder&StringBuffer](#StringBuilder&StringBuffer)
+    + [格式化输出](#格式化输出)
     + [正则表达式](#正则表达式)
     + [Scanner](#scanner)
   * [异常](#异常)
@@ -661,7 +661,7 @@ public final class String
 
 [String有没有长度限制](https://hollischuang.gitee.io/tobetopjavaer/#/basics/java-basic/length-of-string)
 
-### StringBuilder & StringBuffer
+### StringBuilder&StringBuffer
 
 `StringBuilder`和`StringBuffer`都是可变字符串，使用方法基本类似
 
