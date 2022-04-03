@@ -474,6 +474,8 @@ public enum State {
 
 由于`synchronized`、`Lock`以及其他加锁机制会使线程进入阻塞状态，如果多个线程之间陷入了相互等待的循环时，该状况称为**死锁**，此时所有线程都不能向前执行。
 
+
+
 ## JUC
 
 ### JUC简介
@@ -497,23 +499,91 @@ Java SE 5的`java.util.concurrent`(JUC)类库引入了大量的新类，被设�
       implements java.io.Serializable 
   ```
 
-  注释说明基于`AQS`可以实现许多有用且高效的同步器，如`ReentrantLock`、`Semaphore`等。
+  注释说明基于`AQS`抽象类可以实现许多有用且高效的同步器，如`ReentrantLock`、`Semaphore` 、`CountDownLatch`等。
 
-- `AQS`原理分析
+  - `AQS`同步器是基于模板方法模式的，子类可通过重写下面的方法来实现其他功能。(注：除了下面的方法，`AQS`的其他方法均被声明为`final`，即子类不能重写)
+  
+    ```java
+    protected boolean tryAcquire(int arg);      //独占式的获取同步状态
+    
+    protected boolean tryRelease(int arg);		//独占式的释放同步状态
+    
+    protected int tryAcquireShared(int arg);	//共享式的获取同步状态
+    
+    protected boolean tryReleaseShared(int arg);//共享式的释放同步状态
+    
+    protected boolean isHeldExclusively();		//同步状态是否是在独占模式下被线程占用
+    ```
+  
+- `AQS`原理分析：
 
-  https://www.cnblogs.com/waterystone/p/4920797.html
+  - 核心思想：
 
-  https://www.cnblogs.com/chengxiao/archive/2017/07/24/7141160.html
+    - 请求的资源空闲，将当前请求资源的线程设为有效线程，并将共享资源设为锁定状态；
+
+    - 请求的资源被占用，将阻塞的线程加入到 等待队列（`AQS`中使用`CLH锁`队列）中等待被唤醒以及分配锁。
+
+    - `CLH`(Craig, Landin, and Hagersten - 人名) 锁队列：是一个带有头尾结点指针的双向链表，由一个个`Node`结点（由请求共享资源的线程封装而成）组成。
+
+      - 注：链表的头部`head`只允许删除结点，尾部`tail`只允许插入结点，即`FIFO`
+
+        ![image-20220331161610961](Java并发.assets/image-20220331161610961.png)
+
+  - 共享资源的同步状态 `private volatile int state;` （使用`volatile`为了保证线程可见性）。可通过下面的方法访问以及操作同步状态：
+
+    ```java
+    //Returns the current value of synchronization state.
+    protected final int getState() {return state;}
+    
+    //Sets the value of synchronization state.
+    protected final void setState(int newState) {state = newState;}
+    
+    //如果当前状态值state等于预期值expect，则自动地将同步状态设置为给定的更新值update（是原子操作）。
+    protected final boolean compareAndSetState(int expect, int update) {
+        return unsafe.compareAndSwapInt(this, stateOffset, expect, update);
+    }
+    ```
+
+  - 共享资源的共享方式：
+
+    - 独占式（`Exclusive`）：同一时刻，只有一个线程能访问
+    - 共享式（`Shared`）：同一时刻，多个线程能共同访问
+
+  - 源码分析：
+
+    https://www.cnblogs.com/waterystone/p/4920797.html
+
+
+### Semaphore
+
+`Semaphore`：信号量，类似OS里的P/V操作。可以控制访问共享资源的线程数，允许多个线程同时访问共享资源。
+
+```java
+final int permits = 3;
+Semaphore s = new Semaphore(permits); //初始化一个信号量
+/* 注：初始化的信号量有两种模式：
+ * 1.公平模式：即按照线程请求许可证的顺序来获取，FIFO
+ 	 public Semaphore(int permits) {
+        sync = new NonfairSync(permits);
+     } //默认是非公平的
+     
+ * 2.非公平模式：即抢占式的
+ 	 public Semaphore(int permits, boolean fair) { 
+        sync = fair ? new FairSync(permits) : new NonfairSync(permits);
+     } //可指定模式
+ */
+```
+
+- `s.acquire()`：即P操作。请求一个`permit`，如果`permits` > 0，会立即返回并且`permits-1`；如果`permits` <= 0，则线程会被阻塞并进入等待队列`CLH`中。
+- `s.release()`：即V操作。增加一个`permit`。
+- 一些常用方法：
+  - 
 
 ### CountDownLatch
 
 
 
-### ACyclicBarrier
-
-
-
-### Semaphore
+### CyclicBarrier
 
 
 
