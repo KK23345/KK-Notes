@@ -4,11 +4,11 @@
 
 
 
-## 基础数学
+## 位运算
 
 **EASY**
 
-- [**JZ15** **二进制中1的个数**](https://www.nowcoder.com/practice/8ee967e43c2c4ec193b040ea7fbb10b8) `**位运算**`
+- [**JZ15** **二进制中1的个数**](https://www.nowcoder.com/practice/8ee967e43c2c4ec193b040ea7fbb10b8) 
 - [**JZ65** **不用加减乘除做加法**](https://www.nowcoder.com/practice/59ac416b4b944300b617d4f7f111b215)
 - 
 
@@ -42,10 +42,15 @@
 
 - [**JZ61** **扑克牌顺子**](https://www.nowcoder.com/practice/762836f4d43d43ca9deb273b3de8e1f4)
 
+- [**JZ66** **构建乘积数组**](https://www.nowcoder.com/practice/94a4d381a68b47b7a8bed86f2975db46)
+
+- [**JZ81** **调整数组顺序使奇数位于偶数前面(二)** ](https://www.nowcoder.com/practice/0c1b486d987b4269b398fee374584fc8)`**双指针**`
+
 - 
 
 **MEDIUM**
 
+- **JZ4** **二维数组中的查找** `**二分查找**`
 - 
 
 **HARD**
@@ -60,6 +65,7 @@
 
 - [**JZ5** **替换空格**](https://www.nowcoder.com/practice/0e26e5551f2b489b9f58bc83aa4b6c68)
 - [**JZ50** **第一个只出现一次的字符**](https://www.nowcoder.com/practice/1c82e8cf713b4bbeb2a5b31cf5b0417c)
+- [**JZ73** **翻转单词序列**](https://www.nowcoder.com/practice/3194a4f4cf814f63919d0790578d51f3) `**双指针**`
 - 
 
 **MEDIUM**
@@ -120,10 +126,13 @@
 - [**JZ28** **对称的二叉树**](https://www.nowcoder.com/practice/ff05d44dfdb04e1d83bdbdab320efbcb)
 - [**JZ32** **从上往下打印二叉树**](https://www.nowcoder.com/practice/7fe2212963db4790b57431d9ed259701)
 - [**JZ55** **二叉树的深度**](https://www.nowcoder.com/practice/435fb86331474282a3499955f0a41e8b)
-- 
+- [**JZ68** **二叉搜索树的最近公共祖先**](https://www.nowcoder.com/practice/d9820119321945f588ed6a26f0a6991f)
+- [**JZ79** **判断是不是平衡二叉树**](https://www.nowcoder.com/practice/8b3b95850edb4115918ecebdf1b4d222)
+- [**JZ82** **二叉树中和为某一值的路径(一)**](https://www.nowcoder.com/practice/508378c0823c423baa723ce448cbfd0c)
 
 **MEDIUM**
 
+- [**JZ7** **重建二叉树**](https://www.nowcoder.com/practice/8a19cbe657394eeaac2f6ea9b0f6fcf6)
 - 
 
 **HARD**
@@ -138,6 +147,8 @@
 
 - [**JZ42** **连续子数组的最大和**](https://www.nowcoder.com/practice/459bd355da1549fa8a49e350bf3df484) `**贪心**`
 - [**JZ63** **买卖股票的最好时机(一)**](https://www.nowcoder.com/practice/64b4262d4e6d4f6181cd45446a5821ec)
+- [**JZ69** **跳台阶**](https://www.nowcoder.com/practice/8c82a5b80378478f9484d87d1c5f12a4)
+- [**JZ71** **跳台阶扩展问题**](https://www.nowcoder.com/practice/22243d016f6b47f2a6928b4313c85387)
 - 
 
 **MEDIUM**
