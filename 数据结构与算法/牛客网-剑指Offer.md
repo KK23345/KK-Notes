@@ -133,6 +133,20 @@
 **MEDIUM**
 
 - [**JZ7** **重建二叉树**](https://www.nowcoder.com/practice/8a19cbe657394eeaac2f6ea9b0f6fcf6)
+- [**JZ8** **二叉树的下一个结点**](https://www.nowcoder.com/practice/9023a0c988684a53960365b889ceaf5e)
+- 
+
+**HARD**
+
+- 
+
+
+
+### DFS/BFS
+
+**MEDIUM**
+
+- [**JZ12** **矩阵中的路径**](https://www.nowcoder.com/practice/2a49359695a544b8939c77358d29b7e6)
 - 
 
 **HARD**
@@ -149,10 +163,10 @@
 - [**JZ63** **买卖股票的最好时机(一)**](https://www.nowcoder.com/practice/64b4262d4e6d4f6181cd45446a5821ec)
 - [**JZ69** **跳台阶**](https://www.nowcoder.com/practice/8c82a5b80378478f9484d87d1c5f12a4)
 - [**JZ71** **跳台阶扩展问题**](https://www.nowcoder.com/practice/22243d016f6b47f2a6928b4313c85387)
-- 
 
 **MEDIUM**
 
+- [**JZ14** **剪绳子**](https://www.nowcoder.com/practice/57d85990ba5b440ab888fc72b0751bf8)
 - 
 
 **HARD**
