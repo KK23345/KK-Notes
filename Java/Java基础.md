@@ -85,12 +85,19 @@ Java采用**Unicode**编码。**Unicode**（万国码、国际码、统一码）
 
 - 字符型：char/16（默认值：'\u0000'）
 - 整型：byte/8、short/16、int/32（默认值：0）、long/64（默认值：0L、0l）
-- 浮点型：float/32（默认值：0f）、double/64（0d）
+- 浮点型：float/32（默认值：0.0f）、double/64（0.0d）
 - 布尔型：boolean（默认值：false）。boolean 只有两个值：true、false，可以使用 1 bit 来存储，但是具体大小没有明确规定。JVM 会在编译时期将 boolean 类型的数据转换为 int，使用 1 来表示 true，0 表示 false。
 
 ### 包装类型
 
-1. 基本类型对应的包装类大部分都实现了常量池（缓存池）技术。
+1. 自动装箱与拆箱
+
+```java
+Integer x = 2; // 装箱 调⽤了 Integer.valueOf(2)
+int y = x;     // 拆箱 调⽤了 X.intValue()
+```
+
+2. 基本类型对应的包装类大部分都实现了常量池（缓存池）技术。
 
 - Byte、Short、Integer、Long 对应的缓存数据都是 [-128，127]
 
@@ -110,22 +117,55 @@ Java采用**Unicode**编码。**Unicode**（万国码、国际码、统一码）
   Integer x = new Integer(123);
   Integer y = new Integer(123);
   System.out.println(x == y); // false
+  
   Integer z = Integer.valueOf(123);
   Integer k = Integer.valueOf(123);
   System.out.println(z == k); // true
+  
   Integer m = Integer.valueOf(123);
   Integer n = Integer.valueOf(200);
   System.out.println(m == n); // false
   ```
 
-2. 自动装箱与拆箱
+- `IntegerCache`是`Integer`中的一个静态内部类，内部维护了一个`Integer`型数组`cache`作为缓存池。
 
-   ```java
-   Integer x = 2; // 装箱 调⽤了 Integer.valueOf(2)
-   int y = x;     // 拆箱 调⽤了 X.intValue()
-   ```
+  ```java
+  private static class IntegerCache {
+          static final int low = -128;
+          static final int high;
+          static final Integer cache[];
+  
+          static {
+              // high value may be configured by property
+              int h = 127;
+              String integerCacheHighPropValue =
+                  sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+              if (integerCacheHighPropValue != null) {
+                  try {
+                      int i = parseInt(integerCacheHighPropValue);
+                      i = Math.max(i, 127);
+                      // Maximum array size is Integer.MAX_VALUE
+                      h = Math.min(i, Integer.MAX_VALUE - (-low) -1);
+                  } catch( NumberFormatException nfe) {
+                      // If the property cannot be parsed into an int, ignore it.
+                  }
+              }
+              high = h;
+  
+              cache = new Integer[(high - low) + 1];
+              int j = low;
+              for(int k = 0; k < cache.length; k++)
+                  cache[k] = new Integer(j++);
+  
+              // range [-128, 127] must be interned (JLS7 5.1.7)
+              assert IntegerCache.high >= 127;
+          }
+  
+          private IntegerCache() {}
+      }
+  ```
 
-### 包装类常用方法
+3. 包装类常用方法
 
 [Java Integer类详解](http://c.biancheng.net/view/890.html)
 
@@ -188,8 +228,9 @@ for(int elem : a){}
   float f = 1.1;		// 1.1属于double型字面量，而double精度更高
   short a = 1000000;	// 1000000属于int型字面量，而int精度更高
   //应改为
-  float f = 1.1f;
+  float f = 1.1f; //或 (float)1.1
   short a = (short)1000000;
+  
   //但应注意的是，使用 ++ 或 += 时，会自动隐式转换
   short b = 1;
   b += 1;  //相当于 (short) (b + 1);
@@ -212,7 +253,7 @@ for(int elem : a){}
 
 ### 值传递
 
-Java 的参数是以**值传递**的形式传⼊⽅法中，⽽不是引⽤传递。因此调用方法 fun(String a) 时，相当于将**对象a的地址**以**值的方式**传入方法中，所以**直接改变参数a，原对象的值也会改变**；但若使 a = new String(“xxx”)，此时再改变a，对原对象就无影响了。
+Java 的参数是以**值传递**的形式传⼊⽅法中，⽽不是引⽤传递。因此调用方法 fun(String a) 时，相当于将**对象a的地址**以**值的方式**传入方法中，所以**直接改变参数a，原对象的值也会改变**；但若在方法中使 a = new String(“xxx”)，此时再改变a，对原对象就无影响了。
 
 ### 可变长参数
 
@@ -279,12 +320,12 @@ public void fun(String... args) {  // 可变长参数在编译后会被转换成
 
 ### instanceof
 
-`instanceof`：用于检查对象是否是一个特定类型（类或接口），返回`true/false`。
+`instanceof`：用于检查对象是否是一个特定类型（类或接口）的实例，返回`true/false`。
 
 ```java
 String name = "str";
 boolean res = name instanceof String;  //由于name是String类型，返回true
-boolean res = child instanceof parent; //由于child继承parent，返回true
+boolean res = child instanceof Parent; //由于child继承Parent，返回true
 ```
 
 ## 面向对象
@@ -322,13 +363,13 @@ boolean res = child instanceof parent; //由于child继承parent，返回true
 
 面向对象的三大特征：
 
-- **封装**：将客观事物的**数据和操作方法**封装成抽象的类。在对象的内部，一些数据和方法可以是私有的，禁止外界访问，也可以提供`get/set`方法来操纵数据。
+- **封装**：将客观事物的**数据和操作方法**封装成抽象的类。在对象的内部，一些数据和方法可以是私有的，禁止外界访问，也可以提供`get/set`方法来操纵数据。封装就是隐藏一切可隐藏的东西， 只向外界提供最简单的编程接口。
 - **继承**：将多个类的相同功能和属性抽象成一个类（父类），其他类（子类）可通过`extend`关键字继承**父类的所有属性和方法**（包括私有属性和方法，只是子类无法访问父类的方法和属性）。
   - 子类可以在父类的基础上，扩展自己的属性和方法，提高**代码的复用**以及开发效率；
   - Java只支持单继承，即子类只能继承一个父类。
 - **多态**：不同对象调用同一方法，会产生不同的结果。
   - **静态多态**：函数**重载**，需要在**编译期**决定具体调用哪个方法
-  - **动态多态**：是运行期的多态
+  - **动态多态**：是**运行期**的多态
     - 动态绑定：指程序**运行时**根据对象的类型进行绑定（绑定：将方法调用与方法体关联起来）；
     - 实现动态多态的三个必要条件：
       - 继承父类或实现接口
@@ -355,7 +396,7 @@ boolean res = child instanceof parent; //由于child继承parent，返回true
 `Java`提供了四种访问权限：
 
 - `private`：仅当前类能访问；
-- 不加修饰符：同一包内可访问；
+- `default`：同一包内可访问；
 - `protected`：⽤于修饰成员，表示在继承体系中成员对于⼦类可⻅；
   - 不能修饰类（内部类除外），接口及接口的成员变量和成员方法不能声明为`protected`
   - 同一包中：被声明为 protected 的变量、方法和构造器能被同一个包中的任何其他类访问
@@ -494,17 +535,26 @@ Java允许在一个类的内部定义另一个类(接口、枚举或注解)，�
       return (this == obj); 
   }
   
-  public native int hashCode(); // 返回对象的hash值
+  public native int hashCode(); // 返回对象的hash值，根据对象内存地址换算出hash值
   ```
 
-  - 等价的两个对象散列值⼀定相同，但散列值相同的两个对象不⼀定等价
+  - `equals`方法必须满足以下性质：
 
+    - 自反性：即`x.equals(x) == true`
+    - 对称性：即`x.equals(y) == y.equals(x)`
+    - 传递性：即`x.equals(y), y.equals(z)`都返回`true`时，`x.equals(z) == true`
+    - 一致性：即x和y对象信息没有修改时，多次调用`x.equals(y)`的结果应一致
+    - x不为`null`时，`x.equals(null)`必须返回false
+  
+  - 等价的两个对象散列值⼀定相同，但散列值相同的两个对象不⼀定等价
+  
     - 因为计算哈希值具有随机性，两个值不同的对象可能计算出相同的哈希值
     - 所以在重写`equals() `⽅法时应当总是重写` hashCode() `⽅法，保证等价的两个对象哈希值也相等
   
   - `String`类（Integer...等大部分类）重写了`equals()`方法和` hashCode() `⽅法
   
     - ```java
+      @override
       public boolean equals(Object anObject) {
           // 两个对象引用(地址)相等，返回true
           if (this == anObject) { 
@@ -528,10 +578,11 @@ Java允许在一个类的内部定义另一个类(接口、枚举或注解)，�
           }
           return false;
       }
+      @override
       public int hashCode() {...}
       ```
-  
-    - `==` & `equals()`：`==`只比较  地址（引用类型）或  值（基本类型）是否相等，而重写的`equals()`还会判断 引用类型的内容 是否一致。
+      
+    - `==` & `equals()`：`==`只比较  地址（引用类型）或  值（基本类型，注：1 == 1.0返回true，值相等）是否相等，而重写的`equals()`还会判断 引用类型的内容 是否一致。
   
       ```java
       String st3 = new String("12321");
@@ -650,9 +701,10 @@ public final class String
 
 - `String`字符串不可变
 
-  - `String`类用`final`修饰，既不能被继承；
+  - `String`类用`final`修饰，不能被继承；
   - `value[]`数组声明为`final`，即数组引用初始化后就不能指向其他对象（虽然数组内容可以改变，但由于使用`private`修饰并且`String`类没有提供访问该数组的方法，所以`String`字符串的值是不可变的）。
   - `String`类中每一个看起来会修改String值的方法，实际上都是创建了一个全新的String对象。
+    - 如 + 操作，实际上是创建了 `StringBuilder` 对象进行 `append` 操作，然后将拼接后的 `StringBuilder` 对象用 `toString` 方法处理成 `String` 对象。
   - 不可变的优点
     - 保证字符串的`hash`值不变，只需计算一次；
     - 如果⼀个`String`对象已经被创建了，那么就会从常量池中取得引⽤。只有 String 是不可变的，才可能使⽤常量池；
@@ -959,7 +1011,7 @@ Java 7中引入，无需再在`finally`块中释放或关闭`try`块中使用的
 - 泛型方法：调用方法时指明泛型具体类型，在泛型类或其他类中均可声明。
 
   ```java
-  public static <T> T genericFun(T[] arr) {
+  public <T> T genericFun(T[] arr) {
       return array[rand.nextInt(arr.length - 1)];
   }
   ```
@@ -985,17 +1037,21 @@ public class Generic<T extends Number> { ... }
 public static <T extends Number> T genericFun(Generic<? extends Number> o) {...}
 ```
 
+`<? super T>`：？表示T类型的父类。
+
 ### 类型擦除
 
-当实例化泛型类型时，编译器使用一种叫**类型擦除**（`type erasure`）的技术转换这些类型。在编译时，编译器将清除类和方法中所有与类型参数有关的信息，并且在对象进入和离开方法的边界处添加类型检查和类型转换的方法。（即Java中的泛型，只在编译阶段有效，泛型信息不会进入到运行时阶段）
+当实例化泛型类型时，编译器使用一种叫**类型擦除**（`type erasure`）的技术转换这些类型。在**编译时**，编译器将**清除类和方法中所有与类型参数有关的信息**，并且在对象进入和离开方法的边界处添加类型检查和类型转换的方法。（即Java中的泛型，只在编译阶段有效，泛型信息不会进入到运行时阶段）
 
 类型擦除可让使用泛型的Java应用程序与之前不使用泛型类型的Java类库和应用程序兼容。
+
+
 
 ## 反射
 
 - `Class`对象：当编译一个新类时，会产生一个同名的`.class` 文件，该文件内容保存着`Class`对象（包含了与类有关的信息）。
 
-- 反射：在运行期，可通过反射获得并调用类的所有属性和方法。可通过下面的方法在运行期间获得`Class`对象：
+- 反射：在运行期，可通过反射动态地获取并调用类的所有属性和方法。可通过下面的方法在运行期间获得`Class`对象：
 
   - `Class.forName("类的全限定名")`：无需获得对象实例就可得到类的信息
   - `Object`类中的`getClass()`方法：需拥有类的对象，再执行行`对象.getClass()`
@@ -1007,9 +1063,10 @@ public static <T extends Number> T genericFun(Generic<? extends Number> o) {...}
   Class<?> obj = Class.forName("com.kk.ClassName");
   ```
 
-  - `Field`：提供了获取当前对象的成员变量的类型以及重新设值的方法。 [Java Field类](http://www.51gjie.com/java/791.html)
-  - `Method`：
-  - `Constructor`：
+  - `Field`：获取当前对象的成员变量的类型以及重新设值的方法。 [Java Field类](http://www.51gjie.com/java/791.html)
+  - `Method`：获得方法信息以及执行方法
+  - `Constructor`：获得构造方法信息
+    - 可通过`Constructor`类中的`newInstance()`方法创建实例
 
 - 反射的优缺点：
 

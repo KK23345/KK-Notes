@@ -4,6 +4,19 @@
 
 
 
+## 基础数学
+
+**MEDIUM**
+
+- [**JZ16** **数值的整数次方**](https://www.nowcoder.com/practice/1a834e5e3e1a4b7ba251417554e07c00)
+- 
+
+**HARD**
+
+- 
+
+
+
 ## 位运算
 
 **EASY**
@@ -50,7 +63,8 @@
 
 **MEDIUM**
 
-- **JZ4** **二维数组中的查找** `**二分查找**`
+- [**JZ4** **二维数组中的查找**](https://www.nowcoder.com/practice/abc3fe2ce8e146608e868a70efebf62e) `**二分查找**`
+- [**JZ21** **调整数组顺序使奇数位于偶数前面(一)**](https://www.nowcoder.com/practice/ef1f53ef31ca408cada5093c8780f44b) 
 - 
 
 **HARD**
@@ -88,10 +102,10 @@
 - [**JZ24** **反转链表**](https://www.nowcoder.com/practice/75e878df47f24fdc9dc3e400ec6058ca)
 - [**JZ25** **合并两个排序的链表**](https://www.nowcoder.com/practice/d8b6b4358f774294a89de2a6ac4d9337)
 - [**JZ52** **两个链表的第一个公共结点**](https://www.nowcoder.com/practice/6ab1d9a29e88450685099d45c9e31e46) `**双指针**`
-- 
 
 **MEDIUM**
 
+- [**JZ23** **链表中环的入口结点**](https://www.nowcoder.com/practice/253d2c59ec3e4bc68da16833f79a38e4) `**双指针**`
 - 
 
 **HARD**
@@ -106,10 +120,10 @@
 
 - [**JZ9** **用两个栈实现队列**](https://www.nowcoder.com/practice/54275ddae22f475981afa2244dd448c6)
 - [**JZ30** **包含min函数的栈**](https://www.nowcoder.com/practice/4c776177d2c04c2494f2555c9fcc1e49)
-- 
 
 **MEDIUM**
 
+- [**JZ31** **栈的压入、弹出序列**](https://www.nowcoder.com/practice/d77d11405cc7470d82554cb392585106)
 - 
 
 **HARD**
@@ -134,6 +148,8 @@
 
 - [**JZ7** **重建二叉树**](https://www.nowcoder.com/practice/8a19cbe657394eeaac2f6ea9b0f6fcf6)
 - [**JZ8** **二叉树的下一个结点**](https://www.nowcoder.com/practice/9023a0c988684a53960365b889ceaf5e)
+- [**JZ26** **树的子结构**](https://www.nowcoder.com/practice/6e196c44c7004d15b1610b9afca8bd88)
+- [**JZ33** **二叉搜索树的后序遍历序列**](https://www.nowcoder.com/practice/a861533d45854474ac791d90e447bafd)
 - 
 
 **HARD**
@@ -142,7 +158,7 @@
 
 
 
-### DFS/BFS
+## DFS/BFS
 
 **MEDIUM**
 

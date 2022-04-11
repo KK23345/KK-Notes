@@ -101,7 +101,7 @@ void sort(Comparator<? super E> c);
 
 #### ArrayDeque
 
-<tt>ArrayDeque</tt>和<tt>LinkedList</tt>都实现了<tt>Deque</tt>接口，方法类似，只是底层实现不同，都都可以用来模拟栈和队列。方法同[LinkedList](#LinkedList)
+<tt>ArrayDeque</tt>和<tt>LinkedList</tt>都实现了<tt>Deque</tt>接口，方法类似，只是底层实现不同，都可以用来模拟栈和队列。方法同[LinkedList](#LinkedList)
 
 ### Set接口
 

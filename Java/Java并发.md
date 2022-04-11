@@ -35,6 +35,31 @@
 
   - `run()`方法：在新线程中启动该任务，并与其他线程并发执行。
 
+- 继承`Thread`类
+
+  ```java
+  public class MyThread extends Thread {
+  	@Override
+  	public void run() {
+  		// ...
+  	}
+  }
+  public static void main(String[] args) {
+  	new MyThread().start();
+  }
+  
+  ```
+
+  - `Thread`类实际上实现了`Runnable`接口
+
+  ```java
+  public class Thread implements Runnable
+  ```
+
+  - 实现接口要比直接继承`Thread`类要好些
+    - Java 只⽀持单继承，但是可以实现多个接⼝；
+    - 继承整个 `Thread` 类开销过⼤。
+
 - 实现`Callable`接口：可以有返回值，通过FutureTask封装
 
   ```java
@@ -67,26 +92,6 @@
   	}
   }
   ```
-
-- 继承`Thread`类
-
-  ```java
-  public class MyThread extends Thread {
-  	@Override
-  	public void run() {
-  		// ...
-  	}
-  }
-  public static void main(String[] args) {
-  	new MyThread().start();
-  }
-  
-  ```
-  
-- 实现接口要比直接继承`Thread`类要好些
-
-  - Java 只⽀持单继承，但是可以实现多个接⼝；
-  - 继承整个 `Thread` 类开销过⼤。
 
 ### 线程池
 
@@ -218,7 +223,7 @@ public void run() {
     	lock.lock(); //加锁锁
     	try {
     		//...
-            return val; //注：return语句必须再try子句中出现，确保unlock不会过早发生，从而将数据暴露给其他任务
+            return val; //注：return语句必须在try子句中出现，确保unlock不会过早发生，从而将数据暴露给其他任务
     	} finally {
     		lock.unlock(); //确保释放锁，从⽽避免发⽣死锁。
     	}
@@ -248,9 +253,9 @@ public void run() {
   
 - `volatile`关键字
   - JVM将long和double的64位变量的读写操作当作两个分离的32位操作来执行，因此可能会出现在进行读写操作时发生上下文切换。为了解决这种问题，可以在定义64位变量时使用`volatile`，就会获得**简单操作的原子性**。
-  - 提供了应用中的**可视性**。如果一个域为`volatile`的，那么对这个域的写操作会被立即写入到主存中(即使使用本地缓存也会如此)，从而所有的读取(发生在主存中)操作都可以看到这个修改。但是，非volatile域上的原子操作不会刷新到主存中去，其他读取操作也看不到这个新值。
+  - 提供了应用中的**可视性**。如果一个域为`volatile`的，那么对这个域的写操作会被立即写入到主存中(即使使用本地缓存也会如此)，从而**所有线程**中的读取 (发生在主存中) 操作都可以看到这个修改。但是，非volatile域上的原子操作不会刷新到主存中去，其他读取操作也看不到这个新值。
     - 一个任务内部的任何读写操作对于这个任务来说都是可视的，如果只需要在任务内部保持可视性，则不必将域声明为volatile。
-  - 如果多个任务同时访问某个域，那么这个域就应该被声明为`volatile`或被`synchronized`同步(当然同步也会导致主存刷新)。
+  - 如果多个任务同时访问某个域，那么这个域就应该被声明为`volatile`或被`synchronized`同步 (当然同步也会导致主存刷新) 。
   - 当一个域**依赖它之前的值**（如递增递减、+=），或受到其他域的限制，`volatile`就无法工作，并且它们是非线程安全的。
   - 专家级的程序员可以利用原子操作的性质来编写无锁(即不使用同步)代码，但通常尝试用原子操作来替换同步会带来很大的麻烦。所以使用synchronized是最安全也是首选的方式。
   
@@ -288,7 +293,7 @@ public void run() {
   	 *
        * ThreadLocalMap是 ThreadLocal的静态内部类, 用来维护线程本地变量
        * static class ThreadLocalMap {
-       		//键值对使用的是弱引用，当没有强引用指向 ThreadLocal 实例时，它可被回收，从而避免内存泄露
+       		//key1使用的是弱引用，当没有强引用指向 ThreadLocal 实例时，它可被回收，从而避免内存泄露
        		static class Entry extends WeakReference<ThreadLocal<?>> {
               	Object value;
               	Entry(ThreadLocal<?> k, Object v) {
@@ -354,7 +359,7 @@ public void run() {
   }
   ```
 
-  综上，可以发现每个线程都维护一个`ThreadLocalMap`来存储`ThreadLocal-value`键值对，`set / get`方法仅对该线程的map中的键值对进行操作，从而保证线程安全。
+  综上，可以发现每个线程的`ThreadLocal`本地变量都维护一个`ThreadLocalMap`来存储`ThreadLocal-value`键值对，`set / get`方法仅对该线程的map中的键值对进行操作，从而保证线程安全。
 
   注：
 
@@ -369,10 +374,10 @@ public void run() {
 
 ```java
 public enum State {
-        //新建。线程被创建但并未启动，此时已经初始化并且分配到了系统资源，等待调度器来将线程变为可运行或阻塞状态。
+        //新建。线程被创建但并未启动，此时已经初始化并且分配到了系统资源，等待调度器来将线程变为可运行或阻塞状态。即调用new Thread()后
         NEW,
 
-        //可运行。只等调度器分配时间片就可运行，这与阻塞状态不同
+        //可运行。只等调度器分配时间片就可运行，这与阻塞状态不同。即调用start()方法后
         RUNNABLE,
 
         //阻塞。线程等待某个资源（如锁、IO）从而进入阻塞状态，此时调度器不会为该线程分配时间片，直到线程进入可运行状态（如释放了锁、IO完成）
@@ -398,13 +403,17 @@ public enum State {
     }
 ```
 
+![image-20220407170333083](Java并发.assets/image-20220407170333083.png)
+
+![image-20220407173436720](Java并发.assets/image-20220407173436720.png)
+
 ### 中断
 
-- `Thread.interrupt()`：可中断的一个线程，并设置线程的中断状态为`true`（不能中断IO阻塞和`synchronized`锁阻塞）。
+- `Thread.interrupt()`：设置线程的中断状态标识位为`true`，线程本身并不会因此而改变状态。
 
-- `InterruptedException`：当调用`Thread.interrupt()`或`Thread.sleep(millis)`方法时，如果一个线程正处于`BLOCKED`、`WAITING`、`TIMED_WAITING`这三个状态 或 试图执行一个阻塞操作，将会抛出`InterruptedException`异常，从而提前终止该线程（进入`catch`子句，异常被捕获后，线程的中断状态会立即被置为`false`，即catch子句中线程的中断状态始终为`false`）。
+- `InterruptedException`：当调用`Thread.interrupt()`或`Thread.sleep(millis)`方法时，如果一个线程正处于`BLOCKED`、`WAITING`、`TIMED_WAITING`这三个阻塞状态 或 试图执行一个阻塞操作，将会抛出`InterruptedException`异常，从而提前终止该线程（进入`catch`子句，异常被捕获后，线程的中断状态会立即被置为`false`，即catch子句中线程的中断状态始终为`false`）。
 
-- `Thread.interrupted()`：检测当前线程是否被中断，若被中断返回true。
+- `Thread.isInterrupted()`：检测当前线程是否被中断，若被中断返回true。因此可通过中断标识符安全的终止线程，如下
 
   ```java
   @override
@@ -423,9 +432,10 @@ public enum State {
 
 ### join() 
 
-- `join()`：一个线程a可在其他线程b之上调用`a.join()`方法。
-  - 效果：线程a将被挂起，直到线程b终止（即`b.isAlive()`为`false`）才能恢复执行；
+- `join()`：等待其他线程终止。如在线程b中调用`a.join()`：
+  - 效果：线程b将被挂起转为阻塞状态，直到线程a终止（即`a.isAlive()`为`false`）才能恢复执行；
   - `a.join(millis)`：带超时参数，如果b在要求时间内没终止，`join()`方法总能返回来恢复a执行。
+- 应用场景：很多情况下，主线程生成并启动了子线程，**需要用到子线程返回的结果**，即主线程需要在子线程结束后再结束，这时候就要用到 join() 方法。
 
 ### 使用Object类
 

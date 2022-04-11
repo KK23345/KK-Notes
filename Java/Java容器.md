@@ -1,5 +1,9 @@
 # Java容器
 
+[Java容器源码分析](./Java容器源码分析.md)
+
+
+
 - [Java容器](#java--)
   * [基本框架](#----)
   * [Collection-List接口](#collection-list--)
@@ -18,6 +22,7 @@
     + [TreeMap](#treemap)
     + [HashTable](#hashtable)
     + [LinkedHashMap](#LinkedHashMap)
+  * [fail-fast](#fail-fast)
 
 
 ## 基本框架
@@ -143,7 +148,9 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable 
 ```
 
-HashMap：基于哈希表实现，线程不安全。
+HashMap：基于哈希表实现，线程不安全。(`key`唯一且可以为null，`value`可以有多个为null)
+
+HashMap 的初始长度为 16，之后每次扩充变为原来的两倍。
 
 ### TreeMap
 
@@ -155,7 +162,7 @@ public class TreeMap<K,V>
 
 TreeMap：基于红黑树实现，线程不安全。
 
-### HashTable
+### Hashtable
 
 ```java
 public class Hashtable<K,V>
@@ -163,7 +170,9 @@ public class Hashtable<K,V>
     implements Map<K,V>, Cloneable, java.io.Serializable
 ```
 
-HashTable：与HashMap类似，但线程安全。不过它是遗留类，目前使用ConcurrentHashMap来支持线程安全。
+Hashtable：与HashMap类似，但线程安全。不过它是遗留类，目前使用ConcurrentHashMap来支持线程安全。（`Hashtable`中的`key`和`value`都不能为null）
+
+Hashtable 的初始长度是 11，之后每次扩充容量变为之前的 2n+1（n 为上一次的长度）
 
 ### LinkedHashMap
 
@@ -174,6 +183,18 @@ public class LinkedHashMap<K,V>
 ```
 
 LinkedHashMap：继承HashMap，使用双向链表维护元素插入的顺序。
+
+
+
+## fail-fast
+
+fail-fast 机制是 Java 集合（Collection）中的一种错误机制。当多个线程对同一个集合的内容进行操作时，就可能会产生 fail-fast 事件。 
+
+例如：当某一个线程 A 通过 iterator 去遍历某集合的过程中，若该集合的内容被其他线程所改变了，那么线程 A 访问集合时，就会抛出 ConcurrentModificationException 异常，产生 fail-fast 事 件。这里的操作主要是指 add、remove 和 clear，对集合元素个数进行修改。
+
+ 解决办法：建议使用“java.util.concurrent 包下的类”去取代“java.util 包下的类”。 可以这么理解：在遍历之前，把 modCount 记下来 expectModCount，后面 expectModCount 去 和 modCount 进行比较，如果不相等了，证明已并发了，被修改了，于是抛出 ConcurrentModificationException 异常。
+
+
 
 [Java常用集合&方法](../数据结构与算法/java常用容器&方法.md)
 
