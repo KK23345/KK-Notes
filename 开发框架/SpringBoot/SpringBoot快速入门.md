@@ -49,6 +49,7 @@ public class BookController {
     public String getById(){
         System.out.println("springboot is running...");
         return "springboot is running...";
+        //@RestController->@ResponseBody:return的信息返回到网页
     }
 }
 ```
@@ -94,6 +95,7 @@ public class BookController {
     <version>2.6.3</version>
     <relativePath/> <!-- lookup parent from repository -->
 </parent>
+
 <!--点开spring-boot-starter-parent源码，得知其中又继承了一个坐标：
 	spring-boot-dependencies-->
 <parent>
@@ -101,6 +103,7 @@ public class BookController {
     <artifactId>spring-boot-dependencies</artifactId>
     <version>2.6.3</version>
 </parent>
+
 <!--该坐标中定义了两组信息：-->
 	<!--1.各个技术依赖的版本属性-->
 <properties>
@@ -150,7 +153,8 @@ public class BookController {
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-web</artifactId>
 </dependency>
-<!--spring-boot-starter-web中定义了需要的依赖坐标-->
+
+<!--spring-boot-starter-web中定义了需要的依赖坐标，如下-->
 ......
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -171,6 +175,17 @@ public class BookController {
 
 - `starter`是一个坐标中定了若干个坐标，减少依赖配置。
 - `parent`是定义了几百个依赖版本号，由`SpringBoot`统一管理，减少依赖冲突的。
+
+### 自定义依赖版本
+
+在当前项目的`pom.xml`中使用<properties>标签
+
+```xml
+<properties>
+    <java.version>1.8</java.version>
+    <mysql.version>5.1.43</mysql.version>
+</properties>
+```
 
 ### 引导类
 

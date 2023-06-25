@@ -108,7 +108,7 @@ int y = x;     // 拆箱 调⽤了 X.intValue()
 - 如果传入的基本数据类型大小超出缓存池范围，则会在堆区新建一个对象。如Integer：
 
   ```java
-  public static Integer valueOf(int i) {
+  public static Integer valueOf(int i) { //z
       if (i >= IntegerCache.low && i <= IntegerCache.high)//先判断是否在缓存池中，Java8中缓存池大小-128~127
           return IntegerCache.cache[i + (-IntegerCache.low)];
       return new Integer(i);
@@ -122,7 +122,7 @@ int y = x;     // 拆箱 调⽤了 X.intValue()
   Integer k = Integer.valueOf(123);
   System.out.println(z == k); // true
   
-  Integer m = Integer.valueOf(123);
+  Integer m = Integer.valueOf(200);
   Integer n = Integer.valueOf(200);
   System.out.println(m == n); // false
   ```
