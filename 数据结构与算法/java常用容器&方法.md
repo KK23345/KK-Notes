@@ -1,5 +1,7 @@
 # Java常用容器&方法
 
+[https://www.cainiaojc.com/java/java-arraydeque.html](https://www.cainiaojc.com/java/java-arraydeque.html)
+
 - [Java常用容器&方法](#java常用容器&方法)
   * [Collection接口](#collection接口)
     + [List接口](#list接口)
@@ -96,7 +98,22 @@ void sort(Comparator<? super E> c);
 #### PriorityQueue
 
 ```java
+PriorityQueue<T> minHeap = new PriorityQueue<T>((a, b) -> a - b); // 小顶堆
+PriorityQueue<T> maxHeap = new PriorityQueue<T>((a, b) -> b - a); // 大顶堆
 
+// 添加元素
+add() / offer();
+
+// 查看队首元素
+peek();
+
+// 删除队首元素
+poll();
+
+// 其他方法
+contains(element);	
+size();
+toArray();
 ```
 
 #### ArrayDeque

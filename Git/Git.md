@@ -92,3 +92,25 @@ Git 项目的三个工作区域：
 [Solution for 'ssh: connect to host github.com port 22: Connection timed out' error](https://gist.github.com/Tamal/1cc77f88ef3e900aeae65f0e5e504794)
 
 [fatal: refusing to merge unrelated histories](https://developer.aliyun.com/article/614459)
+
+## 4. 新建分支
+
+```bash
+git branch -a # 查看本地和远程的所有分支
+
+git checkout -b <新分支名>  # 新建本地分支，并切换到新分支上
+# 等价于 
+git branch <新分支名>       # 新建本地分支
+git checkout <新分支名>     # 切换到新分支
+
+git push origin <新分支名>:<新分支名>       # 新建一个远程分支，名字和本地分支名一致
+git push --set-upstream origin <新分支名>  # 将本地分支和远程分支合并关联
+```
+
+```bash
+# 之后进行推送时
+git checkout 分支名
+# ...
+git push -u origin 分支名
+```
+
