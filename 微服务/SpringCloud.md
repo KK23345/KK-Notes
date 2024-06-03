@@ -1069,9 +1069,172 @@ openfeign:
 
 ### 三、分布式链路追踪案例
 
+**服务端和客户端均引入链路追踪相关配置，因为服务端也可能会调用其他微服务接口。**
 
+- 在父工程中，添加需要管理的依赖
 
+  ```xml
+  <properties>
+      <micrometer-tracing.version>1.2.0</micrometer-tracing.version>
+      <micrometer-observation.version>1.12.0</micrometer-observation.version>
+      <feign-micrometer.version>12.5</feign-micrometer.version>
+      <zipkin-reporter-brave.version>2.17.0</zipkin-reporter-brave.version>
+  </properties>
+  
+  <dependencyManagement>
+      <dependencies>
+          <!--micrometer-tracing-bom导入链路追踪版本中心  1-->
+          <dependency>
+              <groupId>io.micrometer</groupId>
+              <artifactId>micrometer-tracing-bom</artifactId>
+              <version>${micrometer-tracing.version}</version>
+              <type>pom</type>
+              <scope>import</scope>
+          </dependency>
+          <!--micrometer-tracing指标追踪  2-->
+          <dependency>
+              <groupId>io.micrometer</groupId>
+              <artifactId>micrometer-tracing</artifactId>
+              <version>${micrometer-tracing.version}</version>
+          </dependency>
+          <!--micrometer-tracing-bridge-brave适配zipkin的桥接包 3-->
+          <dependency>
+              <groupId>io.micrometer</groupId>
+              <artifactId>micrometer-tracing-bridge-brave</artifactId>
+              <version>${micrometer-tracing.version}</version>
+          </dependency>
+          <!--micrometer-observation 4-->
+          <dependency>
+              <groupId>io.micrometer</groupId>
+              <artifactId>micrometer-observation</artifactId>
+              <version>${micrometer-observation.version}</version>
+          </dependency>
+          <!--feign-micrometer 5-->
+          <dependency>
+              <groupId>io.github.openfeign</groupId>
+              <artifactId>feign-micrometer</artifactId>
+              <version>${feign-micrometer.version}</version>
+          </dependency>
+          <!--zipkin-reporter-brave 6-->
+          <dependency>
+              <groupId>io.zipkin.reporter2</groupId>
+              <artifactId>zipkin-reporter-brave</artifactId>
+              <version>${zipkin-reporter-brave.version}</version>
+          </dependency>
+      </dependencies>
+  </dependencyManagement>
+  ```
 
+- 服务端
+
+  - 引入依赖
+
+    ```xml
+    <dependencies>
+        <!--micrometer-tracing指标追踪  1-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing</artifactId>
+        </dependency>
+        <!--micrometer-tracing-bridge-brave适配zipkin的桥接包 2-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <!--micrometer-observation 3-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
+        </dependency>
+        <!--feign-micrometer 4-->
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-micrometer</artifactId>
+        </dependency>
+        <!--zipkin-reporter-brave 5-->
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+        </dependency>
+    </dependencies>
+    ```
+
+  - 修改配置文件
+
+    ```yml
+    # application.yml
+    
+    # ========================zipkin===================
+    management:
+      zipkin:
+        tracing:
+          endpoint: http://localhost:9411/api/v2/spans
+      tracing:
+        sampling:
+          probability: 1.0 #采样率默认为0.1(0.1就是10次只能有一次被记录下来)，值越大收集越及时。
+    ```
+
+  - 测试接口
+
+    ```java
+    @RestController
+    public class PayMicrometerController
+    {
+        /**
+         * Micrometer(Sleuth)进行链路监控的例子
+         * @param id
+         * @return
+         */
+        @GetMapping(value = "/pay/micrometer/{id}")
+        public String myMicrometer(@PathVariable("id") Integer id)
+        {
+            return "Hello, 欢迎到来myMicrometer inputId:  "+id+" \t    服务返回:" + IdUtil.simpleUUID();
+        }
+    }
+    ```
+
+- 客户端
+
+  - 引入依赖（同客户端）
+
+  - 修改配置文件
+
+    ```yml
+    # application.yml
+    
+    # ========================zipkin===================
+    management:
+      zipkin:
+        tracing:
+          endpoint: http://localhost:9411/api/v2/spans
+      tracing:
+        sampling:
+          probability: 1.0 #采样率默认为0.1(0.1就是10次只能有一次被记录下来)，值越大收集越及时。
+    ```
+
+  - 测试接口
+
+    ```java
+    @RestController
+    @Slf4j
+    public class OrderMicrometerController
+    {
+        @Resource
+        private PayFeignApi payFeignApi;
+    
+        @GetMapping(value = "/feign/micrometer/{id}")
+        public String myMicrometer(@PathVariable("id") Integer id)
+        {
+            return payFeignApi.myMicrometer(id);
+        }
+    }
+    ```
+
+- 测试：启动zipkin，调用 localhost:80/feign/pay/micrometer/1 接口，访问 http://127.0.0.1:9411/ 查看链路追踪数据
+
+<img src="assets/image-20240603222244509.png" alt="image-20240603222244509" style="zoom:67%;" />
+
+![image-20240603222328788](assets/image-20240603222328788.png)
 
 
 
