@@ -1456,6 +1456,145 @@ openfeign:
 
 ### 三、Predicate 断言
 
+**Spring Cloud Gateway** 包含许多内置路由断言工厂（RoutePredicateFactory）。这些断言匹配 HTTP 请求的不同属性，可以使`and`组合多个路由断言工厂。内置的 RoutePredicateFactory 如下（如上面用到的 Path）：
+
+<img src="assets/image-20240604200815489.png" alt="image-20240604200815489" style="zoom:80%;" />
+
+- 配置断言和过滤器的两种方式：
+
+  - **Shortcut Configuration**（常用）
+
+    ```yml
+    spring:
+      cloud:
+        gateway:
+          routes:
+          - id: after_route
+            uri: https://example.org
+            predicates:
+            - Cookie=mycookie,mycookievalue  # Cookie: 路由断言工厂类型；key/value使用‘.’分隔
+    ```
+
+  - **Fully expanded arguments**
+
+    ```yml
+    spring:
+      cloud:
+        gateway:
+          routes:
+          - id: after_route
+            uri: https://example.org
+            predicates:
+            - name: Cookie
+              args:
+                name: mycookie
+                regexp: mycookievalue
+    ```
+
+
+
+#### 3.1 内置 RoutePredicateFactory
+
+**[内置 RoutePredicateFactory](https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/request-predicates-factories.html)**：
+
+- **1. After Route Predicate Factory**：匹配在指定日期时间之后发生的请求（时间必须为 java `ZonedDateTime`）
+
+  - 获取 ZonedDateTime 
+
+    ```java
+    public class Main {
+        public static void main(String[] args) {
+            ZonedDateTime zonedDateTime = ZonedDateTime.now(); // 默认时区
+            System.out.println(zonedDateTime);
+        }
+    }
+    ```
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+            - After=2024-06-04T20:26:01.180356600+08:00[Asia/Shanghai]
+    ```
+
+  - 测试：只有在指定时间之后访问才可以，否则会报如下错误（由path未找到导致）：
+
+    ![image-20240604203531391](assets/image-20240604203531391.png)
+
+    <img src="assets/image-20240604204443697.png" alt="image-20240604204443697" style="zoom:50%;" />
+
+- **2. Before Route Predicate Factory**：匹配在指定日期时间之前发生的请求
+
+  ```yml
+  routes:
+      - id: pay_route1                       
+        uri: lb://cloud-provider-pay-service  
+        predicates:
+          - Path=/pay/gateway/get/**         
+          - Before=2024-06-04T20:26:01.180356600+08:00[Asia/Shanghai]
+  ```
+
+- **3. Between Route Predicate Factory**：匹配在指定日期时间之间发生的请求，需要两个参数
+
+  ```yml
+  routes:
+      - id: pay_route1                       
+        uri: lb://cloud-provider-pay-service  
+        predicates:
+          - Path=/pay/gateway/get/**         
+          - Between=2024-06-04T20:26:01.180356600+08:00[Asia/Shanghai], 2024-06-04T20:27:01.180356600+08:00[Asia/Shanghai], 
+  ```
+
+- **4.  Cookie Route Predicate Factory**：需要两个参数，Cookie name 和 regexp（Java 正则表达式），匹配具有指定名称且其值与正则表达式匹配的 cookie。
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+            - Cookie=username, user.
+    ```
+
+  - 测试：使用 curl 或 postman 访问接口并携带 cookie
+
+    ```bash
+    curl http://localhost/feign/pay/gateway/get/1 --cookie "username:user001"
+    ```
+
+    
+
+- **5. Header Route Predicate Factory**：需要两个参数，Header name 和 regexp（Java 正则表达式），匹配具有指定名称且其值与正则表达式匹配的 Header。
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+            - Header=X-Request-Id, \d+
+    ```
+
+  - 测试
+
+    <img src="assets/image-20240604210906417.png" alt="image-20240604210906417" style="zoom:67%;" />
+
+- **6. **
+
+
+
+#### 3.2 自定义 RoutePredicateFactory
+
+
+
 
 
 ### 四、Filter 过滤器
