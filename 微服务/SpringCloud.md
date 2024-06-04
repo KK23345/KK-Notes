@@ -1238,7 +1238,227 @@ openfeign:
 
 
 
+## Gateway
 
+### 一、概述
+
+[Spring Cloud Gateway](https://docs.spring.io/spring-cloud-gateway/reference/index.html) 是加在整个微服务最前沿的防火墙和代理器，隐藏微服务结点 IP 和端口信息，从而加强安全保护。
+
+<img src="D:\study\KK-Notes\微服务\assets\image-20240604145753280.png" alt="image-20240604145753280" style="zoom:67%;" />
+
+- **核心**：
+
+  - **Route（路由）**：网关的基本构建模块，由 ID、目标 URI、断言集合和过滤器集合组成。若断言集合为真，则路由匹配。
+  - **Predicate（断言）**：允许匹配 HTTP 请求中的任何内容。
+  - **Filter（过滤器）**：可以在发送下游请求之前或之后修改请求和响应。
+
+  <img src="D:\study\KK-Notes\微服务\assets\image-20240604150339502.png" alt="image-20240604150339502"  />
+
+- **工作原理**：客户端向 Gateway 发出请求，网关在 Gateway Handler Mapping 中找到与请求相匹配的路由，将其发送到 Gateway Web Handler。Handler 再通过指定的过滤器链来将请求发送到我们实际的服务执行业务逻辑，然后返回。
+
+  - 过滤器之间用虚线分开是因为过滤器可能会在发送代理请求之前(Pre)或之后(Post)执行业务逻辑。
+
+    - 在“pre”类型的过滤器可以做参数校验、权限校验、流量监控、日志输出、协议转换等;
+
+    - 在“post”类型的过滤器中可以做响应内容、响应头的修改，日志的输出，流量监控等有着非常重要的作用。
+
+  <img src="D:\study\KK-Notes\微服务\assets\image-20240604150622483.png" alt="image-20240604150622483" style="zoom:80%;" />
+
+  
+
+### 二、基础配置
+
+**1. 新建 gateway 模块**：网关也是一个微服务，需要注册进 Consul
+
+- 引入依赖
+
+  ```xml
+  <!--gateway-->
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-gateway</artifactId>
+  </dependency>
+  <!--服务注册发现consul discovery-->
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-consul-discovery</artifactId>
+  </dependency>
+  <!-- 指标监控健康检查的actuator,网关是响应式编程删除掉spring-boot-starter-web dependency-->
+  <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+  </dependency>
+  ```
+
+- 修改配置文件
+
+  ```yml
+  server:
+    port: 9527
+  
+  spring:
+    application:
+      name: cloud-gateway #以微服务注册进consul或nacos服务列表内
+    cloud:
+      consul: #配置consul地址
+        host: localhost
+        port: 8500
+        discovery:
+          prefer-ip-address: true
+          service-name: ${spring.application.name}
+  ```
+
+- 修改启动类
+
+  ```java
+  @SpringBootApplication
+  @EnableDiscoveryClient //服务注册和发现
+  public class GatewayApp {
+      public static void main(String[] args) {
+          SpringApplication.run(GatewayApp.class, args);
+      }
+  }
+  ```
+
+**2. 配置路由映射 **：
+
+- 在服务端新增测试接口：
+
+  ```java
+  @RestController
+  public class PayGateWayController
+  {
+      @Resource
+      PayService payService;
+  
+      @GetMapping(value = "/pay/gateway/get/{id}")
+      public ResultData<Pay> getById(@PathVariable("id") Integer id)
+      {
+          Pay pay = payService.getById(id);
+          return ResultData.success(pay);
+      }
+  
+      @GetMapping(value = "/pay/gateway/info")
+      public ResultData<String> getGatewayInfo()
+      {
+          return ResultData.success("gateway info test："+ IdUtil.simpleUUID());
+      }
+  }
+  ```
+
+- 在 gateway 微服务模块中配置与接口相关的路由
+
+  ```yml
+  # gateway application.yml
+  spring:
+    application:
+      name: cloud-gateway #以微服务注册进consul或nacos服务列表内
+    cloud:
+      gateway:
+        routes:
+          - id: pay_route1                  # 路由的ID，没有固定规则但要求唯一
+            uri: http://localhost:8001      # 匹配成功后提供服务的路由地址
+            predicates:
+              - Path=/pay/gateway/get/**    # 断言，路径相匹配的进行路由
+  
+          - id: pay_route2
+            uri: http://localhost:8001
+            predicates:
+              - Path=/pay/gateway/info/**
+  ```
+
+- 通过网关访问接口： localhost:9527/pay/gateway/get/1
+
+  ![image-20240604160211677](D:\study\KK-Notes\微服务\assets\image-20240604160211677.png)
+
+**3. 客户端通过网关调用服务端接口**
+
+- 在通用模块中配置 OpenFeign 服务接口
+
+  ```java
+  @FeignClient(value = "cloud-gateway") // 这里不能再写具体微服务的名称，否则网关会被绕开
+  public interface PayFeignGatewayApi {
+      /**
+       * GateWay进行网关测试案例01
+       * @param id
+       * @return
+       */
+      @GetMapping(value = "/pay/gateway/get/{id}")
+      public ResultData getById(@PathVariable("id") Integer id);
+  
+      /**
+       * GateWay进行网关测试案例02
+       * @return
+       */
+      @GetMapping(value = "/pay/gateway/info")
+      public ResultData<String> getGatewayInfo();
+  }
+  ```
+
+- 在客户端新增测试接口
+
+  ```java
+  @RestController
+  public class OrderGateWayController
+  {
+      @Resource
+      private PayFeignGatewayApi payFeignGatewayApi;
+  
+      @GetMapping(value = "/feign/pay/gateway/get/{id}")
+      public ResultData getById(@PathVariable("id") Integer id)
+      {
+          return payFeignGatewayApi.getById(id);
+      }
+  
+      @GetMapping(value = "/feign/pay/gateway/info")
+      public ResultData<String> getGatewayInfo()
+      {
+          return payFeignGatewayApi.getGatewayInfo();
+      }
+  }
+  ```
+
+- 调用客户端的接口 localhost:80/feign/pay/gateway/get/1
+
+  ![image-20240604162201642](D:\study\KK-Notes\微服务\assets\image-20240604162201642.png)
+
+**注：此时路由地址是写死的，需要配置动态获取微服务的uri**
+
+<img src="D:\study\KK-Notes\微服务\assets\image-20240604162506344.png" alt="image-20240604162506344" style="zoom:67%;" />
+
+
+
+**4. 动态获取微服务uri**
+
+- 修改 gateway 微服务模块配置文件
+
+  ```yml
+  spring:
+    application:
+      name: cloud-gateway #以微服务注册进consul或nacos服务列表内
+    cloud:
+      gateway:
+        routes:
+          - id: pay_route1                        # 路由的ID，没有固定规则但要求唯一
+            # uri: http://localhost:8001           # 匹配成功后提供服务的路由地址
+            uri: lb://cloud-provider-pay-service  # lb代表负载均衡，后面跟微服务名
+            predicates:
+              - Path=/pay/gateway/get/**          # 断言，路径相匹配的进行路由
+  
+          - id: pay_route2
+            # uri: http://localhost:8001
+            uri: lb://cloud-provider-pay-service
+            predicates:
+              - Path=/pay/gateway/info/**
+  ```
+
+
+
+### 三、Predicate 断言
+
+
+
+### 四、Filter 过滤器
 
 
 
