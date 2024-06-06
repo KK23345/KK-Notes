@@ -1497,6 +1497,8 @@ openfeign:
 
 **[内置 RoutePredicateFactory](https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/request-predicates-factories.html)**：
 
+**时间相关 RoutePredicateFactory：**
+
 - **1. After Route Predicate Factory**：匹配在指定日期时间之后发生的请求（时间必须为 java `ZonedDateTime`）
 
   - 获取 ZonedDateTime 
@@ -1549,6 +1551,38 @@ openfeign:
           - Between=2024-06-04T20:26:01.180356600+08:00[Asia/Shanghai], 2024-06-04T20:27:01.180356600+08:00[Asia/Shanghai], 
   ```
 
+
+
+**注：下面的两种断言在调用客户端接口 (feign api) 时不生效，必须通过网关9527调用才能看到效果，原因是因为 feign 在进行服务调用时会丢弃请求头，重新构造请求。解决方法：在 Openfeign 配置类中新增拦截器，将老请求的Header添加到新请求中 **
+
+```Java
+@Configuration
+public class OpenFeignConfig {
+    @Bean
+    public RequestInterceptor requestInterceptor() {
+        return new RequestInterceptor() {
+            @Override
+            public void apply(RequestTemplate requestTemplate) {
+                //1、RequestContextHolder拿到刚进来的这个请求
+                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                if (attributes != null) {
+                    System.out.println("requestInterceptor线程。。。" + Thread.currentThread().getId());
+                    HttpServletRequest request = attributes.getRequest(); //老请求
+                    if (request != null) {
+                        //同步请求头数据
+                        requestTemplate.header("Cookie", request.getHeader("Cookie"));
+                    }
+                }
+            }
+        };
+    }
+}
+```
+
+
+
+**请求头相关 RoutePredicateFactory：**
+
 - **4.  Cookie Route Predicate Factory**：需要两个参数，Cookie name 和 regexp（Java 正则表达式），匹配具有指定名称且其值与正则表达式匹配的 cookie。
 
   - 修改配置文件
@@ -1559,16 +1593,14 @@ openfeign:
           uri: lb://cloud-provider-pay-service  
           predicates:
             - Path=/pay/gateway/get/**         
-            - Cookie=username, user.
+            - Cookie=username, kk
     ```
 
-  - 测试：使用 curl 或 postman 访问接口并携带 cookie
+  - 测试：分别通过网关和feign调用
 
-    ```bash
-    curl http://localhost/feign/pay/gateway/get/1 --cookie "username:user001"
-    ```
+    <img src="assets/image-20240605163821701.png" alt="image-20240605163821701" style="zoom:67%;" />
 
-    
+    <img src="assets/image-20240605170445176.png" alt="image-20240605170445176" style="zoom:67%;" />
 
 - **5. Header Route Predicate Factory**：需要两个参数，Header name 和 regexp（Java 正则表达式），匹配具有指定名称且其值与正则表达式匹配的 Header。
 
@@ -1585,21 +1617,443 @@ openfeign:
 
   - 测试
 
-    <img src="assets/image-20240604210906417.png" alt="image-20240604210906417" style="zoom:67%;" />
+    <img src="assets/image-20240605163417780.png" alt="image-20240605163417780" style="zoom:67%;" />
 
-- **6. **
+- **6.  Host Route Predicate Factory**：
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+            - Host=**.kk.com
+    ```
+
+  - 测试
+
+    <img src="assets/image-20240605163603702.png" alt="image-20240605163603702" style="zoom:67%;" />
+
+
+
+**请求路径相关 RoutePredicateFactory**
+
+- **7.  Path Route Predicate Factory**：
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+    ```
+
+- **8.  Query Route Predicate Factory**：
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+            - Query=name,kk.
+    ```
+
+  - 测试
+
+    <img src="assets/image-20240605163201183.png" alt="image-20240605163201183" style="zoom:67%;" />
+
+- **9. RemoteAddr Route Predicate Factory**：
+
+  - 修改配置文件
+
+    ```yml
+    routes:
+        - id: pay_route1                       
+          uri: lb://cloud-provider-pay-service  
+          predicates:
+            - Path=/pay/gateway/get/**         
+            - RemoteAddr=192.168.1.1/24 # 外部访问我的IP限制，最大跨度不超过32，目前是1~24它们是 CIDR 表示法。
+    ```
 
 
 
 #### 3.2 自定义 RoutePredicateFactory
 
+**源码分析：**以 PathRoutePredicateFactory 为例
 
+```java
+// PathRoutePredicateFactory.java 继承了 AbstractRoutePredicateFactory 抽象类
+public class PathRoutePredicateFactory extends AbstractRoutePredicateFactory<PathRoutePredicateFactory.Config> {
+    @Override
+	public List<String> shortcutFieldOrder() {} 
+
+	@Override
+	public ShortcutType shortcutType() {}
+
+	@Override
+	public Predicate<ServerWebExchange> apply(Config config) { // 如何进行校验
+        
+    } 
+    
+    @Validated
+	public static class Config { // 内部类，路由断言规则
+    }
+}
+
+// AbstractRoutePredicateFactory.java 抽象类
+public abstract class AbstractRoutePredicateFactory<C> extends AbstractConfigurable<C>
+		implements RoutePredicateFactory<C> {
+}
+
+// RoutePredicateFactory.java 接口
+@FunctionalInterface
+public interface RoutePredicateFactory<C> extends ShortcutConfigurable, Configurable<C> {
+}
+```
+
+**自定义 MyRoutePredicateFactory：**
+
+- 编写实现类
+
+  ```java
+  @Component
+  public class MyRoutePredicateFactory extends AbstractRoutePredicateFactory<MyRoutePredicateFactory.Config> {
+      public MyRoutePredicateFactory() {
+          super(MyRoutePredicateFactory.Config.class);
+      }
+  
+      @Override
+      public Predicate<ServerWebExchange> apply(Config config) { // 断言校验过程
+          return new Predicate<ServerWebExchange>()
+          {
+              @Override
+              public boolean test(ServerWebExchange serverWebExchange)
+              {
+                  //检查request的参数里面，userType是否为指定的值，符合配置就通过
+                  String userType = serverWebExchange.getRequest().getQueryParams().getFirst("userType");
+  
+                  if (userType == null) return false;
+  
+                  // 和config的数据进行比较
+                  return userType.equals(config.getUserType());
+              }
+          };
+      }
+  
+      @Override
+      public List<String> shortcutFieldOrder() { // 支持 shortcut 写法
+          return Collections.singletonList("userType");
+      }
+  
+      @Validated
+      public static class Config{ // 断言规则
+          @Setter
+          @Getter
+          @NotEmpty
+          private String userType; //钻、金、银等用户等级
+      }
+  }
+  ```
+
+- 修改配置文件
+
+  ```yml
+  routes:
+      - id: pay_route1                       
+        uri: lb://cloud-provider-pay-service  
+        predicates:
+          - Path=/pay/gateway/get/**         
+          - My=golden
+  ```
+
+- 测试
+
+  ![image-20240605210310632](assets/image-20240605210310632.png)
 
 
 
 ### 四、Filter 过滤器
 
+**路由过滤器** 允许以某种方式修改传入的 HTTP 请求或传出的 HTTP 响应，可以进行请求鉴权、异常处理、记录接口调用时长等工作。过滤器主要分为：
 
+- **Global Filter**： 全局过滤器，作用于所有路由
+- **GatewayFiler Factory**：单一内置过滤器，作用于特定路由或路由分组
+- **CustomFilter**：自定义过滤器
+
+
+
+#### 4.1 内置 Filter
+
+- **RequestHeader 请求头相关**：
+
+  - 新增测试接口
+
+    ```java
+    @RestController
+    public class PayGateWayController
+    {
+        @GetMapping(value = "/pay/gateway/filter")
+        public ResultData<String> getGatewayFilter(HttpServletRequest request)
+        {
+            String result = "";
+            Enumeration<String> headers = request.getHeaderNames();
+            while(headers.hasMoreElements())
+            {
+                String headName = headers.nextElement();
+                String headValue = request.getHeader(headName);
+                System.out.println(headName + " : " + headValue);
+                if(headName.equalsIgnoreCase("X-Request-KK")) {
+                    result = result + headName + "\t " + headValue +" ";
+                }
+            }
+            return ResultData.success("getGatewayFilter 过滤器 test： "+result+" \t "+ DateUtil.now());
+        }
+    }
+    ```
+
+  - **AddRequestHeader** GatewayFilter Factory
+
+    ```yml
+    routes:
+        - id: pay_routh3
+          uri: lb://cloud-provider-pay-service
+          predicates:
+        	- Path=/pay/gateway/filter/**
+          filters:
+        	- AddRequestHeader=X-Request-KK,kk
+    ```
+
+    <img src="assets/image-20240605215122982.png" alt="image-20240605215122982" style="zoom:67%;" />
+
+  - **RemoveRequestHeader** GatewayFilter Factory
+
+  - **SetRequestHeader** GatewayFilter Factory
+
+- **RequestParameter 请求参数相关**：
+
+  - **AddRequestParameter** GatewayFilter Factory
+
+    ```yml
+    routes:
+        - id: pay_routh3
+          uri: lb://cloud-provider-pay-service
+          predicates:
+        	- Path=/pay/gateway/filter/**
+          filters:
+        	- AddRequestParameter=customId,01 # 新增请求参数Parameter：k/v
+    ```
+
+  - **RemoveRequestParameter** GatewayFilter Factory
+
+- **ResponseHeader 响应头相关**：
+
+  - **AddResponseHeader** GatewayFilter Factory
+
+    ```yml
+    routes:
+        - id: pay_routh3
+          uri: lb://cloud-provider-pay-service
+          predicates:
+        	- Path=/pay/gateway/filter/**
+          filters:
+        	- AddResponseHeader=X-Response-KKK, kkk # 新增请求参数 X-Response-KKK 并设值为 kkk
+    ```
+
+  - **RemoveResponseHeader** GatewayFilter Factory
+
+  - **SetResponseHeader** GatewayFilter Factory
+
+- **Path/Redirect 路径相关**：
+
+  - **PrefixPath** GatewayFilter Factory：将路径前缀统一管理，完整路径为 PrefixPath + Path
+
+    ```yml
+    routes:
+        - id: pay_routh3
+          uri: lb://cloud-provider-pay-service
+          predicates:
+        	# - Path=/pay/gateway/filter/**
+        	- Path=/gateway/filter/**
+          filters:
+        	- PrefixPath=/pay  # http://localhost:9527/pay/gateway/filter
+    ```
+
+  - **SetPath** GatewayFilter Factory：访问地址 /XYZ/abc/filter 最终会被设置为 /pay/gateway/filter
+
+    ```yml
+    routes:
+        - id: pay_routh3
+          uri: lb://cloud-provider-pay-service
+          predicates:
+        	# - Path=/pay/gateway/filter/**
+        	- Path=/XYZ/abc/{segment}           # {segment}的内容最后被 SetPath 中的 segment 取代
+          filters:
+        	- SetPath=/pay/gateway/{segment}    # {segment}表示占位符
+    ```
+
+  - **RedirectTo** GatewayFilter Factory：
+
+    ```yml
+    routes:
+        - id: pay_routh3
+          uri: lb://cloud-provider-pay-service
+          predicates:
+        	- Path=/pay/gateway/filter/**
+          filters:
+        	- RedirectTo=302, {要重定向的地址}, {true: 可选，为true时会保留params参数}
+    ```
+
+- **Default Filter **：默认过滤器，应用于所有路由
+
+  ```yml
+  gateway:
+  	default-filters:
+  	- AddResponseHeader=
+  	- PrefixPath=
+  ```
+
+
+
+#### 4.2 自定义 Filter
+
+**自定义 GlobalFilter**：统计接口调用耗时的全局过滤器设计
+
+```java
+@Component
+@Slf4j
+public class MyApiCostTimeGlobalFilter implements GlobalFilter, Ordered {
+
+    private static final String BEGIN_VISIT_TIME = "begin_visit_time";//开始访问时间
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        // 记录访问接口的开始时间
+        exchange.getAttributes().put(BEGIN_VISIT_TIME, System.currentTimeMillis());
+
+        return chain.filter(exchange).then(Mono.fromRunnable(()->{
+            Long beginVisitTime = exchange.getAttribute(BEGIN_VISIT_TIME);
+            if (beginVisitTime != null){
+                log.info("访问接口主机: " + exchange.getRequest().getURI().getHost());
+                log.info("访问接口端口: " + exchange.getRequest().getURI().getPort());
+                log.info("访问接口URL: " + exchange.getRequest().getURI().getPath());
+                log.info("访问接口参数: " + exchange.getRequest().getURI().getRawQuery());
+                log.info("访问接口时长: " + (System.currentTimeMillis() - beginVisitTime) + "ms");
+                log.info("===================================");
+                System.out.println();
+            }
+        }));
+    }
+
+    /***
+     * 数字越小优先级越高
+     * @return
+     */
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+}
+```
+
+- 原理分析
+
+  - **ServerWebExchange**：HTTP 请求/响应交互的约定，提供了获取请求/响应的属性的方法。
+
+    > Contract for an HTTP request-response interaction. Provides access to the HTTP request and response and also exposes additional server-side processing related properties and features such as request attributes.
+
+  - **GatewayFilterChain**：网关过滤器链式调用
+
+    ```java
+    public interface GatewayFilterChain {
+    
+    	/**
+    	 * Delegate to the next {@code GatewayFilter} in the chain.
+    	 * @param exchange the current server exchange
+    	 * @return {@code Mono<Void>} to indicate when request handling is complete
+    	 */
+    	Mono<Void> filter(ServerWebExchange exchange);
+    
+    }
+    ```
+
+  - **Mono**：是Spring Reactor框架中的一个核心组件，它是Reactive Streams规范的一个实现，主要用于处理包含零个或一个元素的异步序列，可以在一个异步任务完成时给出完成信号。
+
+    ```java
+    public abstract class Mono<T> implements CorePublisher<T> {
+        // ...
+        // 上一个Mono结束后，再执行 other mono
+        public final <V> Mono<V> then(Mono<V> other) {
+    		if (this instanceof MonoIgnoreThen) {
+                MonoIgnoreThen<T> a = (MonoIgnoreThen<T>) this;
+                return a.shift(other);
+    		}
+    		return onAssembly(new MonoIgnoreThen<>(new Publisher[] { this }, other));
+    	}
+        
+        // 从 Runnable 创建一个 mono
+        public static <T> Mono<T> fromRunnable(Runnable runnable) {
+    		return onAssembly(new MonoRunnable<>(runnable));
+    	}
+        // ...
+    }
+    ```
+
+- 访问接口会在后台打印相关信息
+
+<img src="assets/image-20240606143154711.png" alt="image-20240606143154711" style="zoom:67%;" />
+
+
+
+**自定义 GatewayFilter**：
+
+```java
+@Component
+public class MyGatewayFilterFactory extends AbstractGatewayFilterFactory<MyGatewayFilterFactory.Config>
+{
+    public MyGatewayFilterFactory()
+    {
+        super(MyGatewayFilterFactory.Config.class);
+    }
+
+
+    @Override
+    public GatewayFilter apply(MyGatewayFilterFactory.Config config)
+    {
+        return new GatewayFilter()
+        {
+            @Override
+            public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain)
+            {
+                ServerHttpRequest request = exchange.getRequest();
+                System.out.println("进入了自定义网关过滤器MyGatewayFilterFactory，status："+config.getStatus());
+                if(request.getQueryParams().containsKey("name")){ // 过滤器规则，参数必须携带name字段才可以放行
+                    return chain.filter(exchange);
+                }else{
+                    exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
+                    return exchange.getResponse().setComplete();
+                }
+            }
+        };
+    }
+
+    @Override
+    public List<String> shortcutFieldOrder() {
+        return Arrays.asList("status");
+    }
+
+    public static class Config
+    {
+        @Getter@Setter
+        private String status;//设定一个状态值/标志位，匹配和才可以访问
+    }
+}
+```
 
 
 
