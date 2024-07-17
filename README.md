@@ -1,13 +1,5 @@
 # KK-Notes
 
-`tag`：
-
-- [Java SE](#Java-SE)、[JVM](#JVM)
-- [数据结构与算法](#数据结构与算法)、[OS](#OS)、[计算机网络](#计算机网络)、[数据库](#数据库)
-- [开发框架](#开发框架)、[分布式](#分布式)、[中间件](#中间件)、[工具](#工具)
-
-
-
 ## Java SE
 
 - [Java基础](./Java/Java基础.md)
@@ -30,7 +22,7 @@
 
 ## 数据结构与算法
 
-- [王道-数据结构](./数据结构与算法/王道-数据结构.md)
+- [数据结构基础](./数据结构与算法/王道-数据结构.md)
 - [Java常用容器&方法](./数据结构与算法/Java常用容器&方法.md)
 - [LeetCode刷题笔记](./数据结构与算法/LeetCode刷题笔记.md)
 - [牛客网-华为机试](./数据结构与算法/牛客网-华为机试.md)
@@ -40,7 +32,7 @@
 
 ## OS
 
-- [王道-操作系统](./OS/王道-操作系统.md)
+- [操作系统](./OS/王道-操作系统.md)
 - [Linux](./OS/Linux.md)
 
 
@@ -53,17 +45,19 @@
 
 ## 数据库
 
-- 
+- MySQL
 
 
 
-## 开发框架
+## Spring系列
 
+- Spring
 - [SpringBoot](./开发框架/SpringBoot/Spring Boot.md)
+- SpringCloud
 
 
 
-## 分布式
+## 设计模式
 
 - 
 
@@ -71,19 +65,20 @@
 
 ## 中间件
 
-- 
+- Redis
+- MQ
+- KAFKA
 
 
 
-## 工具
+## 容器
+
+- [Docker](./Docker/Docker.md)
+- k8s
+
+
+
+## 版本管理
 
 - [Git](./Git/Git.md)
--  [Docker](./Docker/Docker.md)
 
-
-
-## Demo
-
-- [书签社区系统后端接口](https://github.com/KK23345/bookmark)
-
-- 
