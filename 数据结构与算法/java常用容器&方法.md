@@ -131,6 +131,8 @@ boolean add(E e);
 boolean remove(Object o);
 //查找
 boolean contains(Object o);
+//集合长度
+int size();
 ```
 
 #### TreeSet

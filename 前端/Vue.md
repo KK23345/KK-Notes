@@ -40,4 +40,6 @@
 
    ![image-20220705112156625](README.assets/image-20220705112156625.png)<img src="README.assets/image-20220705112222051.png" alt="image-20220705112222051" style="zoom:50%;" />
 
-## 
+## 部署项目
+
+[https://blog.csdn.net/qq_43589143/article/details/123017842](https://blog.csdn.net/qq_43589143/article/details/123017842)
